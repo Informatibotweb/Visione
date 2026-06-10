@@ -371,43 +371,34 @@
         chatMessages.scrollTop = chatMessages.scrollHeight;
     }
 
-    async function sendMessage(message) {
-        if (!message.trim()) return;
-        // Disabilita temporaneamente
-        sendBtn.disabled = true;
-        messageInput.disabled = true;
+async function sendMessage() {
+    const message = messageInput.value.trim();
+    if (!message) return;
 
-        addMessage('user', message);
-        messageInput.value = '';
-        showTyping();
+    addMessage('user', message);
+    messageInput.value = '';
+    showTyping();
 
-        try {
-            const response = await fetch(`${BACKEND_URL}/chat`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ message: message })
-            });
-            if (!response.ok) {
-                throw new Error(`HTTP ${response.status}`);
-            }
-            const data = await response.json();
-            removeTyping();
-            if (data.response) {
-                addMessage('assistant', data.response);
-            } else {
-                addMessage('assistant', 'Risposta vuota dal server.', true);
-            }
-        } catch (error) {
-            removeTyping();
-            console.error(error);
-            addMessage('assistant', '⚠️ Errore di connessione: backend non raggiungibile. Verifica che il server sia attivo.', true);
-        } finally {
-            sendBtn.disabled = false;
-            messageInput.disabled = false;
-            messageInput.focus();
+    try {
+        const response = await fetch(`${BACKEND_URL}/chat`, {
+            method: 'POST',                 // ← DEVE ESSERE POST
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ message: message })
+        });
+        const data = await response.json();
+        removeTyping();
+        if (data.response) {
+            addMessage('assistant', data.response);
+        } else {
+            addMessage('assistant', 'Risposta non valida.');
         }
+    } catch (error) {
+        removeTyping();
+        addMessage('assistant', 'Errore: ' + error.message);
     }
-
+}
     function sendCurrentMessage() {
         const msg = messageInput.value.trim();
         if (msg) sendMessage(msg);
