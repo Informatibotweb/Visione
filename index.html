@@ -2,7 +2,7 @@
 <html lang="it">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
     <title>Visione AI - Chat Intelligente</title>
     <style>
         * {
@@ -10,7 +10,6 @@
             padding: 0;
             box-sizing: border-box;
         }
-
         body {
             font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
             background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
@@ -20,7 +19,6 @@
             align-items: center;
             padding: 12px;
         }
-
         .chat-container {
             width: 100%;
             max-width: 1100px;
@@ -34,7 +32,6 @@
             overflow: hidden;
             border: 1px solid rgba(255,255,255,0.2);
         }
-
         .chat-header {
             background: rgba(0,0,0,0.5);
             padding: 16px 20px;
@@ -45,7 +42,6 @@
             gap: 12px;
             flex-wrap: wrap;
         }
-
         .chat-header h1 {
             font-size: 1.6rem;
             margin: 0;
@@ -53,7 +49,6 @@
             align-items: center;
             gap: 8px;
         }
-
         .chat-header .badge {
             background: #007aff;
             padding: 4px 12px;
@@ -61,7 +56,6 @@
             font-size: 0.7rem;
             font-weight: normal;
         }
-
         .chat-messages {
             flex: 1;
             overflow-y: auto;
@@ -71,21 +65,17 @@
             gap: 16px;
             scroll-behavior: smooth;
         }
-
         .message {
             display: flex;
             flex-direction: column;
             max-width: 85%;
         }
-
         .message.user {
             align-self: flex-end;
         }
-
         .message.assistant {
             align-self: flex-start;
         }
-
         .bubble {
             padding: 12px 18px;
             border-radius: 26px;
@@ -94,19 +84,16 @@
             font-size: 1rem;
             box-shadow: 0 1px 2px rgba(0,0,0,0.1);
         }
-
         .user .bubble {
             background: #007aff;
             color: white;
             border-bottom-right-radius: 6px;
         }
-
         .assistant .bubble {
             background: rgba(255,255,255,0.92);
             color: #1a1a2e;
             border-bottom-left-radius: 6px;
         }
-
         .timestamp {
             font-size: 0.7rem;
             margin-top: 4px;
@@ -115,7 +102,6 @@
             opacity: 0.6;
             color: #ddd;
         }
-
         .chat-input-area {
             background: rgba(0,0,0,0.5);
             padding: 16px;
@@ -123,7 +109,6 @@
             gap: 12px;
             border-top: 1px solid rgba(255,255,255,0.15);
         }
-
         .chat-input-area input {
             flex: 1;
             padding: 14px 20px;
@@ -134,12 +119,10 @@
             outline: none;
             transition: 0.2s;
         }
-
         .chat-input-area input:focus {
             background: white;
             box-shadow: 0 0 0 2px #007aff;
         }
-
         .chat-input-area button {
             background: #007aff;
             border: none;
@@ -151,18 +134,15 @@
             transition: all 0.2s;
             font-size: 1rem;
         }
-
         .chat-input-area button:hover {
             background: #005bbf;
             transform: scale(0.97);
         }
-
         .chat-input-area button:disabled {
             background: #555;
             cursor: not-allowed;
             transform: none;
         }
-
         .typing-indicator {
             display: flex;
             gap: 6px;
@@ -172,7 +152,6 @@
             border-radius: 24px;
             width: fit-content;
         }
-
         .typing-indicator span {
             width: 8px;
             height: 8px;
@@ -180,15 +159,12 @@
             border-radius: 50%;
             animation: blink 1.4s infinite;
         }
-
         .typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
         .typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
-
         @keyframes blink {
             0%, 60%, 100% { opacity: 0.3; transform: scale(0.8); }
             30% { opacity: 1; transform: scale(1.2); }
         }
-
         @media (max-width: 600px) {
             .message { max-width: 95%; }
             .chat-header h1 { font-size: 1.3rem; }
@@ -200,14 +176,14 @@
 <body>
 <div class="chat-container">
     <div class="chat-header">
-        <h1>🧠 Visione AI <span class="badge">v16.0</span></h1>
+        <h1>🧠 Visione AI <span class="badge">v17.0</span></h1>
         <div style="flex:1"></div>
-        <div style="font-size:0.8rem; opacity:0.7;">RAG + Groq</div>
+        <div style="font-size:0.8rem; opacity:0.7;">RAG + Groq (diretta)</div>
     </div>
     <div class="chat-messages" id="chatMessages">
         <div class="message assistant">
             <div class="bubble">
-                Ciao! Sono Visione. Ho una memoria di <strong>7178 pagine</strong> già nel mio cervello. Cosa desideri sapere?
+                Ciao! Sono Visione. Uso il database backend e Groq per risponderti. Cosa desideri sapere?
             </div>
             <div class="timestamp"></div>
         </div>
@@ -219,8 +195,11 @@
 </div>
 
 <script>
-    // 🔁 IMPOSTA QUI L'URL DEL TUO BACKEND SU RENDER (senza slash finale)
-    const BACKEND_URL = 'https://web-production-69591.up.railway.app/';
+    // 🔁 CONFIGURAZIONE - MODIFICA QUESTI DUE VALORI
+    const BACKEND_URL = 'https://web-production-69591.up.railway.app/'; // Sostituisci con il tuo URL Railway
+    const GROQ_API_KEY = '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';              // Sostituisci con la tua nuova chiave Groq (rigenerata!)
+    const GROQ_MODEL = 'llama-3.1-8b-instant';
+    const GROQ_URL = 'https://api.groq.com/openai/v1/chat/completions';
 
     const chatMessages = document.getElementById('chatMessages');
     const messageInput = document.getElementById('messageInput');
@@ -257,37 +236,73 @@
         if (typing) typing.remove();
     }
 
+    async function chiamaGroq(prompt) {
+        const payload = {
+            model: GROQ_MODEL,
+            messages: [{ role: "user", content: prompt }],
+            temperature: 0.7,
+            max_tokens: 350
+        };
+        const response = await fetch(GROQ_URL, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${GROQ_API_KEY}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(payload)
+        });
+        if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(`Groq API error ${response.status}: ${errorText}`);
+        }
+        const data = await response.json();
+        return data.choices[0].message.content.trim();
+    }
+
     async function sendMessage() {
         const message = messageInput.value.trim();
         if (!message) return;
 
-        // Disabilita input durante l'invio
         sendBtn.disabled = true;
         messageInput.disabled = true;
-
         addMessage('user', message);
         messageInput.value = '';
         showTyping();
 
         try {
-            const response = await fetch(`${BACKEND_URL}/chat`, {
+            // 1. Chiamata al backend per ottenere il contesto (RAG)
+            const ragResponse = await fetch(`${BACKEND_URL}/chat`, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ message: message })
             });
-            const data = await response.json();
-            removeTyping();
-            if (data.response) {
-                addMessage('assistant', data.response);
+            const ragData = await ragResponse.json();
+            let contesto = "";
+            // Se il backend ha restituito qualcosa di utile (non il messaggio di fallback)
+            if (ragData.response && !ragData.response.includes("Generazione automatica non disponibile")) {
+                contesto = ragData.response;
             } else {
-                addMessage('assistant', 'Mi dispiace, risposta non valida dal server.');
+                contesto = "Nessuna informazione specifica trovata nel database.";
             }
+
+            // 2. Costruisci il prompt per Groq
+            const prompt = `Sei Visione, un'assistente AI intelligente e amichevole.
+Usa le informazioni seguenti per rispondere alla domanda dell'utente. Se non trovi la risposta, dì semplicemente che non lo sai.
+
+${contesto}
+
+Utente: ${message}
+
+Risposta in italiano, chiara e naturale:`;
+
+            // 3. Chiamata diretta a Groq
+            const rispostaGenerata = await chiamaGroq(prompt);
+            removeTyping();
+            addMessage('assistant', rispostaGenerata);
         } catch (error) {
             removeTyping();
-            addMessage('assistant', `⚠️ Errore di connessione: ${error.message}. Verifica che il backend sia attivo su ${BACKEND_URL}`);
-            console.error('Errore fetch:', error);
+            addMessage('assistant', `❌ Errore: ${error.message}. Controlla console o chiave Groq.`);
+            console.error(error);
         } finally {
             sendBtn.disabled = false;
             messageInput.disabled = false;
