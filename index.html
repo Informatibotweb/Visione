@@ -5,6 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
     <title>Visione AI - Assistente Intelligente</title>
     <link rel="icon" type="image/png" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧠</text></svg>">
+    <!-- Highlight.js per evidenziazione sintassi -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
     <style>
         /* ==========================================
            1. DESIGN LIQUID GLASS & SYSTEM THEME MATCH
@@ -25,6 +28,7 @@
             --hover-item: rgba(0, 0, 0, 0.04);
             --glow-1: rgba(0, 113, 227, 0.08);
             --glow-2: rgba(147, 51, 234, 0.05);
+            --code-bg: rgba(0, 0, 0, 0.05);
         }
         @media (prefers-color-scheme: dark) {
             :root {
@@ -43,6 +47,7 @@
                 --hover-item: rgba(255, 255, 255, 0.05);
                 --glow-1: rgba(41, 151, 255, 0.12);
                 --glow-2: rgba(147, 51, 234, 0.1);
+                --code-bg: rgba(255, 255, 255, 0.05);
             }
         }
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, sans-serif; }
@@ -94,20 +99,31 @@
         #chat-display.active { opacity: 1; pointer-events: all; }
         .message-wrapper { display: flex; width: 100%; animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; opacity: 0; transform: translateY(15px); }
         @keyframes slideUp { to { opacity: 1; transform: translateY(0); } }
-        .message { max-width: 80%; padding: 16px 20px; border-radius: 20px; line-height: 1.54; font-size: 1.05rem; position: relative; box-shadow: var(--glass-shadow); }
+        .message { max-width: 85%; padding: 16px 20px; border-radius: 20px; line-height: 1.54; font-size: 1rem; position: relative; box-shadow: var(--glass-shadow); word-wrap: break-word; }
         .message strong { font-weight: 600; }
         .user-wrapper { justify-content: flex-end; }
         .msg-user { background: var(--msg-user); border: 1px solid var(--msg-user-border); border-bottom-right-radius: 4px; }
         .ai-wrapper { justify-content: flex-start; }
         .msg-ai { background: var(--msg-ai); border: 1px solid var(--glass-border); border-bottom-left-radius: 4px; }
-        .copy-btn {
-            position: absolute; top: -12px; right: -12px; background: var(--input-bg);
+        .copy-btn, .download-btn {
+            position: absolute; background: var(--input-bg);
             border: 1px solid var(--glass-border); border-radius: 50%; width: 28px; height: 28px;
             display: flex; align-items: center; justify-content: center; cursor: pointer;
             opacity: 0; transition: all 0.2s; font-size: 0.85rem; box-shadow: var(--glass-shadow);
         }
-        .message-wrapper:hover .copy-btn { opacity: 1; }
-        .copy-btn:hover { transform: scale(1.08); background: var(--hover-item); }
+        .copy-btn { top: -12px; right: -12px; }
+        .download-btn { top: -12px; right: 28px; }
+        .message-wrapper:hover .copy-btn, .message-wrapper:hover .download-btn { opacity: 1; }
+        .copy-btn:hover, .download-btn:hover { transform: scale(1.08); background: var(--hover-item); }
+        pre { 
+            background: var(--code-bg); 
+            border-radius: 12px; 
+            padding: 12px; 
+            overflow-x: auto; 
+            margin: 10px 0;
+            font-size: 0.85rem;
+        }
+        code { font-family: 'SF Mono', Monaco, 'Cascadia Code', monospace; }
         #input-container { width: 100%; padding: 0 18%; position: absolute; left: 0; transition: all 0.6s cubic-bezier(0.25, 1, 0.5, 1); }
         #input-container.center-mode { top: 45%; transform: translateY(-50%); }
         #input-container.bottom-mode { top: 100%; transform: translateY(calc(-100% - 35px)); }
@@ -153,7 +169,7 @@
             .btn-glass { padding: 10px 12px; font-size: 0.85rem; }
             .chat-list-item { padding: 8px 12px; font-size: 0.85rem; }
             #chat-display { padding: 20px 12px 140px 12px; }
-            .message { max-width: 90%; font-size: 0.95rem; padding: 12px 16px; }
+            .message { max-width: 95%; font-size: 0.95rem; padding: 12px 16px; }
             #input-container { padding: 0 16px; }
             #welcome-text { font-size: 1.8rem; }
         }
@@ -189,7 +205,7 @@
 
 <script>
     // ============================================================
-    // CONFIGURAZIONE - MODIFICA QUI I TUOI VALORI
+    // CONFIGURAZIONE - MODIFICA I TUOI VALORI
     // ============================================================
     const BACKEND_URL = 'https://web-production-69591.up.railway.app/';   // URL del tuo backend Python su Railway
     const GROQ_API_KEY = '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';               // Sostituisci con la tua nuova chiave Groq
@@ -197,17 +213,31 @@
     const GROQ_URL = 'https://api.groq.com/openai/v1/chat/completions';
     
     // Prompt di sistema per definire la personalità di Visione
+    // Include la descrizione delle funzioni del backend (stato, ricerca, ecc.)
     const SYSTEM_PROMPT = `Sei Visione, un'assistente IA intelligente, amichevole e professionale. 
     Usi un linguaggio naturale, italiano, e rispondi in modo chiaro e completo. 
     Puoi usare emoji con moderazione. Non dire mai di essere un modello di Meta o Llama. 
     Se l'utente chiede informazioni specifiche, cerca di fornire risposte utili basate sul contesto che ricevi. 
     Formatta il testo in modo leggibile, usando grassetto per i concetti importanti.
-    Rispondi sempre nella lingua dell'utente.`;
+    Rispondi sempre nella lingua dell'utente.
+    
+    Il tuo backend Python (su Railway) ha un database di conoscenza con pagine Wikipedia e informazioni.
+    Puoi rispondere a domande come:
+    - "Quanto è grande il database?" → Risponderai con il numero di pagine e la dimensione in MB (attraverso /stato)
+    - "Cerca [qualcosa]" → Eseguirai una ricerca nel database o su Wikipedia
+    - "Chi è [persona]" → Cercherai informazioni e le userai per rispondere
+    - "Spiegami [concetto]" → Usi le informazioni dal database
+    - "Cosa dice il database?" → Accedi alle tue conoscenze memorizzate
+    
+    Ricordati che il backend è in grado di recuperare informazioni, ma la generazione finale è tua.
+    Se l'utente chiede "quanti anni ha Gerry Scotti", il titolo della conversazione verrà generato automaticamente.
+    Mantieni memoria dell'argomento principale: se l'utente inizia a parlare di sviluppo di un sito, prosegui su quel tema.
+    `;
 
     // ============================================================
-    // STATO DELL'APPLICAZIONE (memoria in localStorage)
+    // STATO DELL'APPLICAZIONE
     // ============================================================
-    let allChats = {};          // { chatId: { title, history: [{role, content}] } }
+    let allChats = {};
     let currentChatId = null;
 
     // Elementi DOM
@@ -218,9 +248,7 @@
     const newChatBtn = document.getElementById("new-chat-btn");
     const chatListContainer = document.getElementById("chat-list");
 
-    // ============================================================
-    // FUNZIONI DI SUPPORTO
-    // ============================================================
+    // Funzioni helper
     function salvaDati() {
         localStorage.setItem("visione_all_chats", JSON.stringify(allChats));
         localStorage.setItem("visione_current_chat_id", currentChatId);
@@ -233,42 +261,103 @@
         if (currentChatId && !allChats[currentChatId]) currentChatId = null;
     }
 
-    // Ridimensionamento automatico textarea
     function resizeTextarea() {
         userInput.style.height = 'auto';
         userInput.style.height = (userInput.scrollHeight) + 'px';
     }
     userInput.addEventListener("input", resizeTextarea);
 
-    // Renderizza un singolo messaggio nella chat (solo UI, non tocca la history)
-    function renderizzaMessaggio(testo, ruolo) {
+    // Funzione per rilevare e formattare blocchi di codice
+    function formatMessage(text, isUser = false) {
+        if (isUser) return text.replace(/\n/g, '<br>');
+        // Rileva blocchi di codice con tripla backtick
+        let html = text;
+        const codeBlockRegex = /```(\w*)\n([\s\S]*?)```/g;
+        html = html.replace(codeBlockRegex, (match, lang, code) => {
+            const language = lang || 'plaintext';
+            let highlighted;
+            try {
+                highlighted = hljs.highlight(code, { language }).value;
+            } catch(e) {
+                highlighted = code.replace(/[&<>]/g, function(m) {
+                    if (m === '&') return '&amp;';
+                    if (m === '<') return '&lt;';
+                    if (m === '>') return '&gt;';
+                    return m;
+                });
+            }
+            return `<pre><code class="language-${language}">${highlighted}</code></pre>`;
+        });
+        // Gestisci i backtick singoli per codice inline
+        html = html.replace(/`([^`]+)`/g, '<code>$1</code>');
+        // Grassetto
+        html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+        // A capo
+        html = html.replace(/\n/g, '<br>');
+        return html;
+    }
+
+    // Renderizza messaggio con pulsanti copia e download per blocchi di codice
+    function renderizzaMessaggio(testo, ruolo, rawText = null) {
         const wrapper = document.createElement("div");
         wrapper.classList.add("message-wrapper", ruolo === "user" ? "user-wrapper" : "ai-wrapper");
         const msgDiv = document.createElement("div");
         msgDiv.classList.add("message", ruolo === "user" ? "msg-user" : "msg-ai");
-        // Formatta grassetto e a capo
-        let html = testo.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-        html = html.replace(/\n/g, '<br>');
-        msgDiv.innerHTML = html;
+        const formatted = formatMessage(testo, ruolo === "user");
+        msgDiv.innerHTML = formatted;
+        
         if (ruolo !== "user") {
+            // Pulsante copia
             const copyBtn = document.createElement("button");
             copyBtn.classList.add("copy-btn");
             copyBtn.innerHTML = "📋";
             copyBtn.title = "Copia risposta";
             copyBtn.onclick = () => {
-                navigator.clipboard.writeText(testo);
+                const textToCopy = rawText || testo;
+                navigator.clipboard.writeText(textToCopy);
                 copyBtn.innerHTML = "✅";
                 setTimeout(() => copyBtn.innerHTML = "📋", 1500);
             };
             msgDiv.appendChild(copyBtn);
+            
+            // Se c'è codice, aggiungi pulsante scarica
+            if (testo.includes('```')) {
+                const downloadBtn = document.createElement("button");
+                downloadBtn.classList.add("download-btn");
+                downloadBtn.innerHTML = "💾";
+                downloadBtn.title = "Scarica codice";
+                downloadBtn.onclick = () => {
+                    const codeMatch = testo.match(/```(?:\w+)?\n([\s\S]*?)```/);
+                    if (codeMatch && codeMatch[1]) {
+                        const blob = new Blob([codeMatch[1]], {type: "text/plain"});
+                        const a = document.createElement("a");
+                        const url = URL.createObjectURL(blob);
+                        a.href = url;
+                        a.download = "codice.txt";
+                        document.body.appendChild(a);
+                        a.click();
+                        document.body.removeChild(a);
+                        URL.revokeObjectURL(url);
+                        downloadBtn.innerHTML = "✅";
+                        setTimeout(() => downloadBtn.innerHTML = "💾", 1500);
+                    } else {
+                        downloadBtn.innerHTML = "❌";
+                        setTimeout(() => downloadBtn.innerHTML = "💾", 1000);
+                    }
+                };
+                msgDiv.appendChild(downloadBtn);
+            }
         }
         wrapper.appendChild(msgDiv);
         chatDisplay.appendChild(wrapper);
         chatDisplay.scrollTop = chatDisplay.scrollHeight;
+        // Evidenzia sintassi
+        document.querySelectorAll('pre code').forEach((block) => {
+            hljs.highlightElement(block);
+        });
     }
 
-    // Mostra indicatore di caricamento (con pallini)
-    let loadingElement = null;
+    // Indicatore di caricamento
     function mostraCaricamento() {
         const wrapper = document.createElement("div");
         wrapper.classList.add("message-wrapper", "ai-wrapper");
@@ -282,7 +371,7 @@
         if (el) el.remove();
     }
 
-    // Aggiorna la sidebar con tutte le chat
+    // Aggiorna sidebar
     function aggiornaSidebar() {
         chatListContainer.innerHTML = "";
         const sortedIds = Object.keys(allChats).sort((a,b) => b - a);
@@ -304,20 +393,19 @@
         }
     }
 
-    // Carica una chat esistente
+    // Carica chat
     function caricaChat(id) {
         if (!allChats[id]) return;
         currentChatId = id;
         salvaDati();
         aggiornaSidebar();
-        // Svuota display e ricostruisce la storia (salta il system prompt)
         chatDisplay.innerHTML = "";
         inputContainer.classList.remove("center-mode");
         inputContainer.classList.add("bottom-mode");
         chatDisplay.classList.add("active");
         for (let msg of allChats[id].history) {
             if (msg.role !== "system") {
-                renderizzaMessaggio(msg.content, msg.role);
+                renderizzaMessaggio(msg.content, msg.role, msg.rawContent || msg.content);
             }
         }
     }
@@ -333,7 +421,7 @@
         aggiornaSidebar();
     }
 
-    // Reset a schermata home (nessuna chat attiva)
+    // Reset interfaccia
     function resettaInterfaccia() {
         currentChatId = null;
         salvaDati();
@@ -346,7 +434,7 @@
         aggiornaSidebar();
     }
 
-    // Crea una nuova chat (vuota, con system prompt)
+    // Nuova chat
     function nuovaChat() {
         currentChatId = Date.now().toString();
         allChats[currentChatId] = {
@@ -354,7 +442,6 @@
             history: [{ role: "system", content: SYSTEM_PROMPT }]
         };
         salvaDati();
-        // Passa alla modalità chat (senza ancora messaggi)
         chatDisplay.innerHTML = "";
         inputContainer.classList.remove("center-mode");
         inputContainer.classList.add("bottom-mode");
@@ -362,19 +449,66 @@
         aggiornaSidebar();
     }
 
-    // ============================================================
-    // LOGICA PRINCIPALE: INVIO MESSAGGIO (RAG + Groq)
-    // ============================================================
+    // Funzione per generare titolo automatico con Groq
+    async function generaTitolo(messaggioUtente, rispostaAI) {
+        const promptTitolo = `Genera un titolo breve (max 6 parole) per una conversazione che inizia con la domanda: "${messaggioUtente}". Il titolo deve essere in italiano, sintetico e descrittivo. Non usare punteggiatura alla fine.`;
+        try {
+            const response = await fetch(GROQ_URL, {
+                method: "POST",
+                headers: { "Authorization": `Bearer ${GROQ_API_KEY}`, "Content-Type": "application/json" },
+                body: JSON.stringify({ model: GROQ_MODEL, messages: [{ role: "user", content: promptTitolo }], temperature: 0.5, max_tokens: 20 })
+            });
+            if (response.ok) {
+                const data = await response.json();
+                let titolo = data.choices[0].message.content.trim();
+                if (titolo.length > 40) titolo = titolo.substring(0, 40);
+                return titolo;
+            }
+        } catch(e) { console.error(e); }
+        return messaggioUtente.substring(0, 30) + (messaggioUtente.length > 30 ? "..." : "");
+    }
+
+    // Funzione per rilevare comandi naturali (es. "quanto è grande il database")
+    async function comandoNaturale(domanda) {
+        const domandaLow = domanda.toLowerCase();
+        if (domandaLow.includes("quanto è grande") || domandaLow.includes("dimensione del database") || domandaLow.includes("pagine")) {
+            try {
+                const resp = await fetch(`${BACKEND_URL}/stato`);
+                if (resp.ok) {
+                    const data = await resp.json();
+                    return `📊 **Database**: ${data.pagine} pagine, ${data.dimensione_mb} MB.`;
+                }
+            } catch(e) { return "⚠️ Non riesco a contattare il backend per le statistiche."; }
+        }
+        if (domandaLow.startsWith("cerca ")) {
+            const query = domanda.substring(6);
+            if (query) {
+                try {
+                    const resp = await fetch(`${BACKEND_URL}/chat`, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ message: query })
+                    });
+                    if (resp.ok) {
+                        const data = await resp.json();
+                        return data.response || "Nessun risultato trovato.";
+                    }
+                } catch(e) { return "Errore nella ricerca."; }
+            }
+        }
+        return null;
+    }
+
+    // Invio messaggio principale
     async function inviaMessaggio() {
         const testo = userInput.value.trim();
         if (!testo) return;
 
-        // Se non esiste una chat corrente, creala automaticamente
+        // Se non c'è chat, creane una nuova
         if (!currentChatId) {
             currentChatId = Date.now().toString();
-            const titolo = testo.substring(0, 24) + (testo.length > 24 ? "..." : "");
             allChats[currentChatId] = {
-                title: titolo,
+                title: "Nuova conversazione",
                 history: [{ role: "system", content: SYSTEM_PROMPT }]
             };
             salvaDati();
@@ -384,73 +518,65 @@
             aggiornaSidebar();
         }
 
-        // Aggiungi il messaggio utente alla UI e alla history
-        renderizzaMessaggio(testo, "user");
-        allChats[currentChatId].history.push({ role: "user", content: testo });
+        // Aggiungi messaggio utente
+        renderizzaMessaggio(testo, "user", testo);
+        allChats[currentChatId].history.push({ role: "user", content: testo, rawContent: testo });
         salvaDati();
 
-        // Disabilita input durante l'elaborazione
         sendBtn.disabled = true;
         userInput.disabled = true;
         mostraCaricamento();
 
         try {
-            // 1. Chiamata al backend per ottenere il contesto (RAG)
-            const ragResponse = await fetch(`${BACKEND_URL}/chat`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ message: testo })
-            });
-            let contesto = "";
-            if (ragResponse.ok) {
-                const ragData = await ragResponse.json();
-                if (ragData.response && !ragData.response.includes("Generazione automatica non disponibile")) {
-                    contesto = ragData.response;
+            // Controlla se è un comando naturale (es. /stato implicito)
+            let rispostaDiretta = await comandoNaturale(testo);
+            if (!rispostaDiretta) {
+                // RAG: chiamata al backend per contesto
+                const ragResponse = await fetch(`${BACKEND_URL}/chat`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ message: testo })
+                });
+                let contesto = "";
+                if (ragResponse.ok) {
+                    const ragData = await ragResponse.json();
+                    if (ragData.response && !ragData.response.includes("Generazione automatica non disponibile")) {
+                        contesto = ragData.response;
+                    } else {
+                        contesto = "Nessuna informazione specifica trovata nel database.";
+                    }
                 } else {
-                    contesto = "Nessuna informazione specifica trovata nel database.";
+                    contesto = "Servizio di recupero informazioni temporaneamente non disponibile.";
                 }
-            } else {
-                contesto = "Servizio di recupero informazioni temporaneamente non disponibile.";
+
+                // Costruzione prompt con storia recente (ultimi 6 messaggi)
+                const historyMessages = allChats[currentChatId].history.filter(m => m.role !== "system").slice(-6);
+                let prompt = SYSTEM_PROMPT + "\n\n";
+                for (let msg of historyMessages) {
+                    prompt += `${msg.role === "user" ? "Utente" : "Assistente"}: ${msg.content}\n`;
+                }
+                prompt += `\nEcco informazioni aggiuntive dalla ricerca (database/Wikipedia):\n${contesto}\n\n`;
+                prompt += `Ora rispondi all'utente che ha appena detto: "${testo}"\nRisposta in italiano, chiara e naturale. Se l'utente ha chiesto un codice, mostralo in blocchi markdown con triple backtick.`;
+
+                // Chiamata a Groq
+                const groqResp = await fetch(GROQ_URL, {
+                    method: "POST",
+                    headers: { "Authorization": `Bearer ${GROQ_API_KEY}`, "Content-Type": "application/json" },
+                    body: JSON.stringify({ model: GROQ_MODEL, messages: [{ role: "user", content: prompt }], temperature: 0.7, max_tokens: 800 })
+                });
+                if (!groqResp.ok) throw new Error(`Groq error ${groqResp.status}`);
+                const groqData = await groqResp.json();
+                rispostaDiretta = groqData.choices[0].message.content.trim();
             }
 
-            // 2. Costruzione del prompt per Groq (include la storia recente della chat + contesto)
-            // Prendiamo gli ultimi 6 messaggi (escluso system) per mantenere il contesto
-            const historyMessages = allChats[currentChatId].history.filter(m => m.role !== "system").slice(-6);
-            let prompt = SYSTEM_PROMPT + "\n\n";
-            for (let msg of historyMessages) {
-                prompt += `${msg.role === "user" ? "Utente" : "Assistente"}: ${msg.content}\n`;
-            }
-            prompt += `\nEcco informazioni aggiuntive dalla ricerca (database/Wikipedia):\n${contesto}\n\n`;
-            prompt += `Ora rispondi all'utente che ha appena detto: "${testo}"\nRisposta in italiano, chiara e naturale:`;
-
-            // 3. Chiamata diretta a Groq
-            const groqPayload = {
-                model: GROQ_MODEL,
-                messages: [{ role: "user", content: prompt }],
-                temperature: 0.7,
-                max_tokens: 500
-            };
-            const groqResp = await fetch(GROQ_URL, {
-                method: "POST",
-                headers: {
-                    "Authorization": `Bearer ${GROQ_API_KEY}`,
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify(groqPayload)
-            });
-            if (!groqResp.ok) throw new Error(`Groq API error: ${groqResp.status}`);
-            const groqData = await groqResp.json();
-            const risposta = groqData.choices[0].message.content.trim();
-
-            // 4. Mostra risposta e salva in history
             rimuoviCaricamento();
-            renderizzaMessaggio(risposta, "assistant");
-            allChats[currentChatId].history.push({ role: "assistant", content: risposta });
+            renderizzaMessaggio(rispostaDiretta, "assistant", rispostaDiretta);
+            allChats[currentChatId].history.push({ role: "assistant", content: rispostaDiretta, rawContent: rispostaDiretta });
             salvaDati();
 
-            // Se è il primo messaggio della chat, aggiorna il titolo
+            // Generazione titolo automatico se è la prima interazione (chat con 2 messaggi non-system)
             if (allChats[currentChatId].history.filter(m => m.role !== "system").length === 2) {
-                const titolo = testo.substring(0, 24) + (testo.length > 24 ? "..." : "");
+                const titolo = await generaTitolo(testo, rispostaDiretta);
                 allChats[currentChatId].title = titolo;
                 salvaDati();
                 aggiornaSidebar();
@@ -458,22 +584,20 @@
         } catch (err) {
             console.error(err);
             rimuoviCaricamento();
-            renderizzaMessaggio("❌ Si è verificato un errore. Controlla la connessione o riprova più tardi.", "assistant");
-            // Rimuove l'ultimo messaggio utente dalla history per evitare incoerenze
-            allChats[currentChatId].history.pop();
+            const errMsg = "❌ Si è verificato un errore. Controlla la connessione o riprova più tardi.";
+            renderizzaMessaggio(errMsg, "assistant", errMsg);
+            allChats[currentChatId].history.pop(); // rimuovi ultimo utente
             salvaDati();
         } finally {
             sendBtn.disabled = false;
             userInput.disabled = false;
-            userInput.focus();
             userInput.value = "";
             resizeTextarea();
+            userInput.focus();
         }
     }
 
-    // ============================================================
-    // EVENTI E INIZIALIZZAZIONE
-    // ============================================================
+    // Eventi
     sendBtn.addEventListener("click", inviaMessaggio);
     newChatBtn.addEventListener("click", nuovaChat);
     userInput.addEventListener("keydown", (e) => {
@@ -483,7 +607,7 @@
         }
     });
 
-    // Avvio: carica dati e mostra home se non ci sono chat, altrimenti l'ultima attiva
+    // Inizializzazione
     caricaDati();
     if (currentChatId && allChats[currentChatId]) {
         caricaChat(currentChatId);
