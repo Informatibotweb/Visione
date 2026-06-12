@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
+    <title>Visione AI - Developer Lab</title>
+    <link rel="icon" type="image/png" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>👨‍💻</text></svg>">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, sans-serif; }
+        :root {
+            --bg-color: #f5f5f7;
+            --text-main: #1d1d1f;
+            --text-muted: #86868b;
+            --sidebar-bg: rgba(240, 240, 245, 0.6);
+            --glass-bg: rgba(255, 255, 255, 0.4);
+            --glass-border: rgba(0, 0, 0, 0.08);
+            --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.05);
+            --accent-color: #0071e3;
+            --input-bg: rgba(255, 255, 255, 0.7);
+            --hover-item: rgba(0, 0, 0, 0.04);
+            --glow-1: rgba(0, 113, 227, 0.08);
+            --glow-2: rgba(147, 51, 234, 0.05);
+        }
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg-color: #060608;
+                --text-main: #f5f5f7;
+                --text-muted: #86868b;
+                --sidebar-bg: rgba(20, 20, 25, 0.6);
+                --glass-bg: rgba(255, 255, 255, 0.02);
+                --glass-border: rgba(255, 255, 255, 0.08);
+                --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5);
+                --accent-color: #2997ff;
+                --input-bg: rgba(30, 30, 35, 0.6);
+                --hover-item: rgba(255, 255, 255, 0.05);
+                --glow-1: rgba(41, 151, 255, 0.12);
+                --glow-2: rgba(147, 51, 234, 0.1);
+            }
+        }
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+        }
+        .ambient-light { position: absolute; border-radius: 50%; filter: blur(140px); z-index: -1; pointer-events: none; }
+        .light-1 { width: 50vw; height: 50vw; background: var(--glow-1); top: -10%; left: -10%; }
+        .light-2 { width: 40vw; height: 40vw; background: var(--glow-2); bottom: -10%; right: -10%; }
+
+        /* Sidebar */
+        .glass-panel {
+            background: var(--glass-bg);
+            backdrop-filter: blur(40px) saturate(180%);
+            border: 1px solid var(--glass-border);
+            box-shadow: var(--glass-shadow);
+        }
+        #sidebar {
+            width: 280px;
+            height: 100%;
+            border-right: 1px solid var(--glass-border);
+            background: var(--sidebar-bg);
+            display: flex;
+            flex-direction: column;
+            padding: 24px 16px;
+            z-index: 10;
+        }
+        .brand h2 { font-size: 1.3rem; margin-bottom: 24px; display: flex; align-items: center; gap: 8px; }
+        .btn-glass {
+            background: var(--input-bg);
+            border: 1px solid var(--glass-border);
+            color: var(--text-main);
+            padding: 12px 16px;
+            border-radius: 14px;
+            cursor: pointer;
+            transition: 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            font-weight: 500;
+            margin-bottom: 20px;
+        }
+        .btn-glass:hover { background: var(--hover-item); transform: translateY(-1px); }
+        .back-link {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            text-decoration: none;
+            color: var(--text-main);
+            margin-top: auto;
+            padding: 12px;
+            border-radius: 12px;
+            background: var(--input-bg);
+        }
+        /* Main area */
+        .main-lab {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 20px 20px 20px 20px;
+            overflow: hidden;
+        }
+        .toolbar {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+        }
+        .toolbar button {
+            background: var(--input-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 30px;
+            padding: 8px 18px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: 0.2s;
+            color: var(--text-main);
+        }
+        .toolbar button:hover { background: var(--hover-item); transform: scale(0.97); }
+        .editor-preview {
+            display: flex;
+            flex: 1;
+            gap: 20px;
+            min-height: 0;
+        }
+        .editor-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
+            overflow: hidden;
+        }
+        .editor-header {
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--glass-border);
+            font-weight: 600;
+            background: rgba(0,0,0,0.1);
+        }
+        textarea {
+            flex: 1;
+            background: var(--input-bg);
+            border: none;
+            padding: 16px;
+            font-family: 'SF Mono', 'Fira Code', monospace;
+            font-size: 0.9rem;
+            line-height: 1.5;
+            color: var(--text-main);
+            resize: none;
+            outline: none;
+        }
+        .preview-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
+            overflow: hidden;
+        }
+        .preview-header {
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--glass-border);
+            font-weight: 600;
+        }
+        .output-frame {
+            flex: 1;
+            width: 100%;
+            border: none;
+            background: white;
+        }
+        .explanation {
+            margin-top: 16px;
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
+            padding: 16px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        .explanation h3 { font-size: 1rem; margin-bottom: 8px; }
+        .explanation p { font-size: 0.9rem; line-height: 1.4; }
+        @media (max-width: 700px) {
+            .editor-preview { flex-direction: column; }
+            #sidebar { width: 240px; }
+            .toolbar button { padding: 6px 12px; font-size: 0.75rem; }
+        }
+    </style>
+</head>
+<body>
+<div class="ambient-light light-1"></div>
+<div class="ambient-light light-2"></div>
+
+<aside id="sidebar" class="glass-panel">
+    <div class="brand"><h2>👨‍💻 Visione Lab</h2></div>
+    <button id="newFileBtn" class="btn-glass">📄 Nuovo file</button>
+    <button id="resetCodeBtn" class="btn-glass">🔄 Reset esempio</button>
+    <a href="index.html" class="back-link">← Torna alla chat</a>
+</aside>
+
+<div class="main-lab">
+    <div class="toolbar">
+        <button id="runBtn">▶️ Esegui codice</button>
+        <button id="explainBtn">🧠 Spiega il codice</button>
+        <button id="clearOutputBtn">🗑️ Pulisci output</button>
+    </div>
+    <div class="editor-preview">
+        <div class="editor-container">
+            <div class="editor-header">📝 Editor (HTML/CSS/JS)</div>
+            <textarea id="codeEditor" placeholder="Scrivi qui il tuo codice HTML, CSS o JavaScript..."></textarea>
+        </div>
+        <div class="preview-container">
+            <div class="preview-header">🖥️ Anteprima / Output</div>
+            <iframe id="previewFrame" class="output-frame" sandbox="allow-same-origin allow-scripts allow-popups allow-forms allow-modals"></iframe>
+        </div>
+    </div>
+    <div class="explanation" id="explanationBox">
+        <h3>✨ Spiegazione AI</h3>
+        <p>Clicca su "Spiega il codice" per ricevere un'analisi intelligente del tuo codice.</p>
+    </div>
+</div>
+
+<script>
+    // CONFIGURAZIONE (usa le stesse credenziali del backend e Groq)
+    const BACKEND_URL = 'https://visione-server.up.railway.app';
+    const GROQ_API_KEY = 'gsk_LA_TUA_NUOVA_CHIAVE';  // SOSTITUISCI
+    const GROQ_MODEL = 'llama-3.1-8b-instant';
+    const GROQ_URL = 'https://api.groq.com/openai/v1/chat/completions';
+
+    // Elementi DOM
+    const codeEditor = document.getElementById('codeEditor');
+    const previewFrame = document.getElementById('previewFrame');
+    const runBtn = document.getElementById('runBtn');
+    const explainBtn = document.getElementById('explainBtn');
+    const clearOutputBtn = document.getElementById('clearOutputBtn');
+    const newFileBtn = document.getElementById('newFileBtn');
+    const resetCodeBtn = document.getElementById('resetCodeBtn');
+    const explanationDiv = document.getElementById('explanationBox');
+
+    // Esempio di codice iniziale
+    const DEFAULT_CODE = `<!DOCTYPE html>
+<html>
+<head>
+    <title>Visione Demo</title>
+    <style>
+        body { font-family: system-ui; text-align: center; padding: 2rem; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; }
+        h1 { font-size: 2rem; }
+        button { padding: 10px 20px; border: none; border-radius: 30px; background: white; color: #333; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <h1>👋 Ciao da Visione AI</h1>
+    <p>Questo codice è stato eseguito nel sandbox.</p>
+    <button onclick="alert('Funziona!')">Cliccami</button>
+</body>
+</html>`;
+
+    let currentCode = DEFAULT_CODE;
+
+    // Inizializza editor
+    codeEditor.value = currentCode;
+
+    // Funzione per eseguire il codice nell'iframe
+    function runCode() {
+        const code = codeEditor.value;
+        currentCode = code;
+        const iframe = previewFrame;
+        const blob = new Blob([code], { type: 'text/html' });
+        const url = URL.createObjectURL(blob);
+        iframe.src = url;
+        // Rilascia l'URL dopo il caricamento per evitare memory leak
+        iframe.onload = () => URL.revokeObjectURL(url);
+    }
+
+    // Pulisce l'iframe (mostra pagina bianca)
+    function clearOutput() {
+        const iframe = previewFrame;
+        iframe.srcdoc = '<!DOCTYPE html><html><body style="background:white; font-family:sans-serif; display:flex; align-items:center; justify-content:center; height:100vh;">🖥️ Output pulito</body></html>';
+    }
+
+    // Spiega il codice usando Groq (direttamente dal frontend, senza backend)
+    async function explainCode() {
+        const code = codeEditor.value;
+        if (!code.trim()) {
+            explanationDiv.innerHTML = `<h3>✨ Spiegazione AI</h3><p>⚠️ Nessun codice da spiegare.</p>`;
+            return;
+        }
+        explanationDiv.innerHTML = `<h3>✨ Spiegazione AI</h3><p>🧠 Visione sta analizzando il codice...</p>`;
+        const prompt = `Sei un esperto di programmazione. Spiega in modo chiaro e didattico (in italiano) il seguente codice, evidenziando cosa fa, le tecnologie utilizzate e eventuali best practice o miglioramenti. Codice:\n\n${code}`;
+        try {
+            const response = await fetch(GROQ_URL, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${GROQ_API_KEY}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    model: GROQ_MODEL,
+                    messages: [{ role: 'user', content: prompt }],
+                    temperature: 0.5,
+                    max_tokens: 800
+                })
+            });
+            if (!response.ok) throw new Error(`HTTP ${response.status}`);
+            const data = await response.json();
+            const explanation = data.choices[0].message.content;
+            // Formatta il testo (Markdown di base)
+            let html = marked.parse(explanation);
+            explanationDiv.innerHTML = `<h3>✨ Spiegazione AI</h3>${html}`;
+        } catch (err) {
+            explanationDiv.innerHTML = `<h3>✨ Spiegazione AI</h3><p>❌ Errore nel contattare l'AI: ${err.message}</p>`;
+            console.error(err);
+        }
+    }
+
+    // Reset codice all'esempio
+    function resetCode() {
+        codeEditor.value = DEFAULT_CODE;
+        currentCode = DEFAULT_CODE;
+        runCode();
+        explanationDiv.innerHTML = `<h3>✨ Spiegazione AI</h3><p>Codice ripristinato. Clicca su "Spiega il codice" per una descrizione.</p>`;
+    }
+
+    // Nuovo file (editor vuoto)
+    function newFile() {
+        codeEditor.value = '';
+        currentCode = '';
+        clearOutput();
+        explanationDiv.innerHTML = `<h3>✨ Spiegazione AI</h3><p>Editor vuoto. Scrivi il tuo codice e premi "Esegui".</p>`;
+    }
+
+    // Eventi
+    runBtn.addEventListener('click', runCode);
+    explainBtn.addEventListener('click', explainCode);
+    clearOutputBtn.addEventListener('click', clearOutput);
+    newFileBtn.addEventListener('click', newFile);
+    resetCodeBtn.addEventListener('click', resetCode);
+
+    // Esegui automaticamente all'avvio
+    runCode();
+
+    // Salvataggio locale del codice (opzionale)
+    let saveTimeout;
+    codeEditor.addEventListener('input', () => {
+        clearTimeout(saveTimeout);
+        saveTimeout = setTimeout(() => {
+            localStorage.setItem('visione_dev_code', codeEditor.value);
+        }, 500);
+    });
+    // Carica eventuale codice salvato
+    const savedCode = localStorage.getItem('visione_dev_code');
+    if (savedCode) {
+        codeEditor.value = savedCode;
+        runCode();
+    }
+
+    // Per evidenziazione sintassi (opzionale) - useremo semplicemente la textarea.
+    // Se vuoi syntax highlighting avanzato, potremmo integrare CodeMirror, ma per ora va bene.
+</script>
+</body>
+</html>
