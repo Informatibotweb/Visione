@@ -2,20 +2,14 @@
 <html lang="it">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
     <title>Visione AI - Assistente Intelligente</title>
-    <link rel="icon" type="image/png" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧠</text></svg>">
-    
-    <!-- Librerie per Markdown e evidenziazione codice -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧠</text></svg>">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
-    
     <style>
-        /* ==========================================
-           1. DESIGN LIQUID GLASS & SYSTEM THEME MATCH
-        ========================================== */
-        
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, sans-serif; }
         :root {
             --bg-color: #f5f5f7;
             --text-main: #1d1d1f;
@@ -27,13 +21,12 @@
             --accent-color: #0071e3;
             --msg-user: rgba(0, 113, 227, 0.1);
             --msg-user-border: rgba(0, 113, 227, 0.15);
-            --msg-quar: rgba(255, 255, 255, 0.6);
+            --msg-ai: rgba(255, 255, 255, 0.6);
             --input-bg: rgba(255, 255, 255, 0.7);
             --hover-item: rgba(0, 0, 0, 0.04);
             --glow-1: rgba(0, 113, 227, 0.08);
             --glow-2: rgba(147, 51, 234, 0.05);
         }
-
         @media (prefers-color-scheme: dark) {
             :root {
                 --bg-color: #060608;
@@ -46,609 +39,331 @@
                 --accent-color: #2997ff;
                 --msg-user: rgba(41, 151, 255, 0.15);
                 --msg-user-border: rgba(41, 151, 255, 0.25);
-                --msg-quar: rgba(255, 255, 255, 0.03);
+                --msg-ai: rgba(255, 255, 255, 0.03);
                 --input-bg: rgba(30, 30, 35, 0.6);
                 --hover-item: rgba(255, 255, 255, 0.05);
                 --glow-1: rgba(41, 151, 255, 0.12);
                 --glow-2: rgba(147, 51, 234, 0.1);
             }
         }
-
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, sans-serif; }
-
-        body {
-            background-color: var(--bg-color); color: var(--text-main);
-            height: 100vh; overflow: hidden; display: flex;
-            transition: background-color 0.4s ease;
-            position: relative;
-        }
-
+        body { background: var(--bg-color); color: var(--text-main); height: 100vh; overflow: hidden; display: flex; position: relative; }
         .ambient-light { position: absolute; border-radius: 50%; filter: blur(140px); z-index: -1; pointer-events: none; }
         .light-1 { width: 50vw; height: 50vw; background: var(--glow-1); top: -10%; left: -10%; }
         .light-2 { width: 40vw; height: 40vw; background: var(--glow-2); bottom: -10%; right: -10%; }
-
-        /* ==========================================
-           2. SIDEBAR (fissa desktop, mobile hamburger)
-        ========================================== */
-        .glass-panel {
-            background: var(--glass-bg); backdrop-filter: blur(40px) saturate(180%);
-            border: 1px solid var(--glass-border); box-shadow: var(--glass-shadow);
-        }
-
-        #sidebar {
-            width: 300px; height: 100%; border-right: 1px solid var(--glass-border);
-            background: var(--sidebar-bg); display: flex; flex-direction: column; padding: 24px 16px; z-index: 10;
-            transition: left 0.3s ease;
-            <a href="dev.html" class="btn-glass" style="margin-top: auto;">👨‍💻 Developer Lab</a>
-        }
-
-        .brand h2 { font-size: 1.3rem; font-weight: 600; margin-bottom: 24px; padding-left: 8px; letter-spacing: -0.5px;}
-
-        .btn-glass {
-            background: var(--input-bg); border: 1px solid var(--glass-border);
-            color: var(--text-main); padding: 12px 16px; border-radius: 14px;
-            font-size: 0.95rem; cursor: pointer; transition: all 0.2s ease;
-            display: flex; align-items: center; justify-content: center; gap: 8px; font-weight: 500;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.02);
-        }
-        .btn-glass:hover { transform: translateY(-1px); background: var(--hover-item); border-color: var(--text-muted); }
-
-        .chat-list-container {
-            flex: 1; overflow-y: auto; margin-top: 24px; display: flex; flex-direction: column; gap: 8px;
-        }
-        
-        .chat-list-item {
-            display: flex; align-items: center; justify-content: space-between;
-            padding: 12px 14px; border-radius: 12px; cursor: pointer;
-            transition: all 0.2s ease; font-size: 0.9rem; font-weight: 500;
-            color: var(--text-main); border: 1px solid transparent;
-        }
-        .chat-list-item:hover { background: var(--hover-item); }
-        .chat-list-item.active { background: var(--input-bg); border-color: var(--glass-border); box-shadow: 0 4px 12px rgba(0,0,0,0.03); }
-        
-        .chat-title-text { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; padding-right: 8px; }
-        .delete-chat-btn { background: transparent; border: none; color: var(--text-muted); cursor: pointer; font-size: 1rem; opacity: 0; transition: opacity 0.2s; padding: 2px 6px; border-radius: 6px; }
-        .chat-list-item:hover .delete-chat-btn { opacity: 1; }
-        .delete-chat-btn:hover { color: #ff3b30; background: rgba(255, 59, 48, 0.1); }
-
-        /* Mobile toggle */
-        .menu-toggle {
-            display: none;
-            position: fixed;
-            top: 16px;
-            left: 16px;
-            z-index: 1000;
-            background: var(--input-bg);
-            backdrop-filter: blur(20px);
-            border: 1px solid var(--glass-border);
-            border-radius: 30px;
-            width: 44px;
-            height: 44px;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.5rem;
-            cursor: pointer;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-        }
-        .sidebar-overlay {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.5);
-            z-index: 999;
-            opacity: 0;
-            transition: opacity 0.3s;
-            pointer-events: none;
-        }
-        .sidebar-overlay.active {
-            display: block;
-            opacity: 1;
-            pointer-events: auto;
-        }
-
-        /* ==========================================
-           3. AREA CHAT
-        ========================================== */
-        #main-chat { flex: 1; display: flex; flex-direction: column; position: relative; height: 100%; }
-
-        #chat-display {
-            flex: 1; overflow-y: auto; padding: 20px 18% 120px 18%; display: flex; flex-direction: column; gap: 24px;
-            scroll-behavior: smooth;
-        }
-
-        /* Messaggi */
-        .message-wrapper { display: flex; width: 100%; animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; opacity: 0; transform: translateY(15px); }
-        @keyframes slideUp { to { opacity: 1; transform: translateY(0); } }
-
-        .message { max-width: 80%; padding: 16px 20px; border-radius: 20px; line-height: 1.54; font-size: 1.05rem; position: relative; box-shadow: var(--glass-shadow); }
-        .message strong { font-weight: 600; }
-
+        .glass-panel { background: var(--glass-bg); backdrop-filter: blur(40px); border: 1px solid var(--glass-border); box-shadow: var(--glass-shadow); }
+        #sidebar { width: 280px; height: 100%; border-right: 1px solid var(--glass-border); background: var(--sidebar-bg); display: flex; flex-direction: column; padding: 24px 16px; z-index: 10; transition: transform 0.3s; }
+        .brand h2 { font-size: 1.3rem; margin-bottom: 24px; display: flex; align-items: center; gap: 8px; }
+        .btn-glass { background: var(--input-bg); border: 1px solid var(--glass-border); color: var(--text-main); padding: 12px; border-radius: 14px; cursor: pointer; transition: 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px; font-weight: 500; margin-bottom: 16px; width: 100%; }
+        .btn-glass:hover { background: var(--hover-item); transform: translateY(-1px); }
+        .chat-list-container { flex: 1; overflow-y: auto; margin-top: 16px; display: flex; flex-direction: column; gap: 8px; }
+        .chat-list-item { display: flex; justify-content: space-between; align-items: center; padding: 10px; border-radius: 12px; cursor: pointer; background: var(--input-bg); margin-bottom: 4px; }
+        .chat-list-item.active { background: var(--accent-color); color: white; }
+        .delete-chat-btn { background: none; border: none; cursor: pointer; font-size: 1rem; }
+        .menu-toggle { display: none; position: fixed; top: 16px; left: 16px; z-index: 1000; background: var(--input-bg); backdrop-filter: blur(20px); border: 1px solid var(--glass-border); border-radius: 30px; width: 44px; height: 44px; align-items: center; justify-content: center; font-size: 1.5rem; cursor: pointer; }
+        .sidebar-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); z-index: 999; opacity: 0; transition: opacity 0.2s; pointer-events: none; }
+        .sidebar-overlay.active { display: block; opacity: 1; pointer-events: auto; }
+        #main-chat { flex: 1; display: flex; flex-direction: column; }
+        #chat-display { flex: 1; overflow-y: auto; padding: 20px 18% 100px 18%; display: flex; flex-direction: column; gap: 20px; }
+        .message-wrapper { display: flex; width: 100%; animation: slideUp 0.3s ease; }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+        .message { max-width: 75%; padding: 12px 18px; border-radius: 22px; line-height: 1.45; font-size: 0.95rem; position: relative; box-shadow: var(--glass-shadow); }
         .user-wrapper { justify-content: flex-end; }
         .msg-user { background: var(--msg-user); border: 1px solid var(--msg-user-border); border-bottom-right-radius: 4px; }
-
-        .quar-wrapper { justify-content: flex-start; }
-        .msg-quar { background: var(--msg-quar); border: 1px solid var(--glass-border); border-bottom-left-radius: 4px; }
-
-        .copy-btn, .download-btn {
-            position: absolute; top: -12px; background: var(--input-bg);
-            border: 1px solid var(--glass-border); border-radius: 50%; width: 28px; height: 28px;
-            display: flex; align-items: center; justify-content: center; cursor: pointer;
-            opacity: 0; transition: all 0.2s; font-size: 0.85rem; box-shadow: var(--glass-shadow);
-        }
-        .copy-btn { right: -12px; }
-        .download-btn { right: 24px; }
-        .message-wrapper:hover .copy-btn,
-        .message-wrapper:hover .download-btn { opacity: 1; }
-        @media (max-width: 700px) {
-            .copy-btn, .download-btn { opacity: 0.7; }
-        }
-
-        /* ==========================================
-           4. NUOVA BARRA DI INPUT (RETTANGOLO STONDATO A LARGHEZZA PIENA)
-        ========================================== */
-        .input-fixed {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background: var(--glass-bg);
-            backdrop-filter: blur(30px);
-            border-top: 1px solid var(--glass-border);
-            padding: 16px 20px 24px 20px;
-            z-index: 100;
-        }
-
-        .input-box {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            background: var(--input-bg);
-            border: 1px solid var(--glass-border);
-            border-radius: 30px;
-            padding: 8px 16px;
-            width: 100%;
-            max-width: 900px;
-            margin: 0 auto;
-            transition: all 0.2s ease;
-        }
-
-        .input-box:focus-within {
-            border-color: var(--accent-color);
-            box-shadow: 0 0 0 3px rgba(0, 113, 227, 0.15);
-        }
-
-        #user-input {
-            flex: 1;
-            background: transparent;
-            border: none;
-            color: var(--text-main);
-            font-size: 1rem;
-            padding: 10px 4px;
-            resize: none;
-            outline: none;
-            max-height: 120px;
-            line-height: 1.4;
-            font-family: inherit;
-        }
-
-        .attach-btn, #send-btn {
-            background: transparent;
-            border: none;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 6px;
-            border-radius: 50%;
-            transition: background 0.2s;
-        }
-        .attach-btn:hover, #send-btn:hover {
-            background: var(--hover-item);
-        }
-        .attach-btn:active, #send-btn:active {
-            transform: scale(0.95);
-        }
-        .attach-btn img, #send-btn img {
-            width: 24px;
-            height: 24px;
-            opacity: 0.8;
-        }
-
-        /* Preview immagini */
-        .image-preview {
-            position: relative;
-            display: inline-block;
-            margin-right: 8px;
-            margin-bottom: 8px;
-        }
-        .image-preview img {
-            width: 60px;
-            height: 60px;
-            object-fit: cover;
-            border-radius: 12px;
-            border: 1px solid var(--glass-border);
-        }
-        .remove-img {
-            position: absolute;
-            top: -8px;
-            right: -8px;
-            background: rgba(0,0,0,0.6);
-            border-radius: 50%;
-            width: 20px;
-            height: 20px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-size: 12px;
-            cursor: pointer;
-        }
-
-        .footer-note {
-            text-align: center;
-            font-size: 0.7rem;
-            color: var(--text-muted);
-            margin-top: 12px;
-        }
-
-        /* Indicatore di caricamento */
-        .typing-indicator span { display: inline-block; width: 6px; height: 6px; background-color: var(--text-muted); border-radius: 50%; margin: 0 2px; animation: bounce 1.4s infinite ease-in-out both; }
-        .typing-indicator span:nth-child(1) { animation-delay: -0.32s; }
-        .typing-indicator span:nth-child(2) { animation-delay: -0.16s; }
-        @keyframes bounce { 0%, 80%, 100% { transform: scale(0); } 40% { transform: scale(1); } }
-        
-        ::-webkit-scrollbar { width: 8px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: rgba(120,120,120,0.2); border-radius: 10px; }
-
-        /* ==========================================
-           5. RESPONSIVE
-        ========================================== */
+        .ai-wrapper { justify-content: flex-start; }
+        .msg-ai { background: var(--msg-ai); border: 1px solid var(--glass-border); border-bottom-left-radius: 4px; }
+        .copy-btn { position: absolute; top: -10px; right: -10px; background: var(--input-bg); border-radius: 50%; width: 26px; height: 26px; display: flex; align-items: center; justify-content: center; cursor: pointer; opacity: 0; transition: 0.1s; font-size: 0.7rem; }
+        .message-wrapper:hover .copy-btn { opacity: 1; }
+        .input-fixed { position: fixed; bottom: 0; left: 0; right: 0; background: var(--glass-bg); backdrop-filter: blur(30px); border-top: 1px solid var(--glass-border); padding: 12px 20px 20px; z-index: 100; }
+        .input-box { display: flex; align-items: center; gap: 12px; background: var(--input-bg); border: 1px solid var(--glass-border); border-radius: 32px; padding: 6px 16px; max-width: 900px; margin: 0 auto; }
+        .attach-btn, #send-btn { background: transparent; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 6px; border-radius: 50%; }
+        .attach-btn img, #send-btn img { width: 24px; height: 24px; opacity: 0.8; }
+        #user-input { flex: 1; background: transparent; border: none; color: var(--text-main); font-size: 1rem; padding: 10px 4px; resize: none; outline: none; max-height: 120px; font-family: inherit; }
+        .typing-indicator span { display: inline-block; width: 6px; height: 6px; background: var(--text-muted); border-radius: 50%; margin: 0 2px; animation: bounce 1.4s infinite; }
+        @keyframes bounce { 0%,80%,100% { transform: scale(0); } 40% { transform: scale(1); } }
         @media (max-width: 768px) {
-            #sidebar {
-                position: fixed;
-                left: -280px;
-                top: 0;
-                z-index: 1000;
-            }
+            #sidebar { position: fixed; left: -280px; top: 0; z-index: 1000; }
             #sidebar.open { left: 0; }
             .menu-toggle { display: flex; }
-            #chat-display { padding: 20px 16px 120px 16px; }
-            .input-fixed { padding: 12px 16px 20px 16px; }
-            .input-box { padding: 6px 12px; }
-            .attach-btn img, #send-btn img { width: 22px; height: 22px; }
-            .message { max-width: 90%; font-size: 0.95rem; padding: 12px 16px; }
+            #chat-display { padding: 20px 16px 100px 16px; }
+            .message { max-width: 90%; }
         }
-        @media (min-width: 769px) {
-            .menu-toggle, .sidebar-overlay { display: none; }
-        }
+        @media (min-width: 769px) { .menu-toggle, .sidebar-overlay { display: none; } }
     </style>
 </head>
 <body>
+<div class="ambient-light light-1"></div>
+<div class="ambient-light light-2"></div>
 
-    <div class="ambient-light light-1"></div>
-    <div class="ambient-light light-2"></div>
+<aside id="sidebar" class="glass-panel">
+    <div class="brand"><h2>🧠 Visione AI</h2></div>
+    <button id="newChatBtn" class="btn-glass">✨ Nuova Chat</button>
+    <div class="chat-list-container" id="chatList"></div>
+    <button id="statoBtn" class="btn-glass">📊 /stato</button>
+    <a href="dev.html" class="btn-glass" style="margin-top: auto;">👨‍💻 Developer Lab</a>
+</aside>
 
-    <!-- Sidebar -->
-    <aside id="sidebar" class="glass-panel">
-        <div class="brand">
-            <h2>🧠 Visione AI</h2>
+<div class="menu-toggle" id="menuToggle">☰</div>
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+<main id="main-chat">
+    <div id="chat-display"></div>
+    <div class="input-fixed">
+        <div id="imagePreviewArea" style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 8px;"></div>
+        <div class="input-box">
+            <button class="attach-btn" id="attachImageBtn"><img src="attach.svg" alt="Allega"></button>
+            <textarea id="user-input" rows="1" placeholder="Scrivi un messaggio..."></textarea>
+            <button id="send-btn"><img src="send.svg" alt="Invia"></button>
         </div>
-        <button id="new-chat-btn" class="btn-glass">
-            <span>✨</span> Nuova Chat
-            <a href="dev.html" class="btn-glass" style="margin-top: auto; text-decoration: none;">👨‍💻 Developer Lab</a>
-        </button>
-        <div class="chat-list-container" id="chat-list"></div>
-    </aside>
+        <p class="footer-note" style="text-align: center; font-size: 0.7rem; margin-top: 8px;">Visione AI • RAG + Groq</p>
+    </div>
+</main>
+<input type="file" id="imageInput" accept="image/*" style="display: none;">
 
-    <!-- Menu hamburger (mobile) -->
-    <div class="menu-toggle" id="menuToggle">☰</div>
-    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+<script>
+    // CONFIGURAZIONE - MODIFICA CON I TUOI VALORI
+    const BACKEND_URL = 'https://visione-server.onrender.com';  // Sostituisci
+    const GROQ_API_KEY = '';              // Sostituisci
+    const GROQ_MODEL = 'llama-3.1-8b-instant';
+    const GROQ_URL = 'https://api.groq.com/openai/v1/chat/completions';
 
-    <!-- Area chat principale -->
-    <main id="main-chat">
-        <div id="chat-display">
-            <div class="message-wrapper quar-wrapper">
-                <div class="message msg-quar">Ciao! Sono Visione. Come posso aiutarti?</div>
-            </div>
-        </div>
+    const SYSTEM_PROMPT = `Sei Visione, assistente intelligente. Rispondi in italiano, usando il contesto fornito.`;
 
-        <!-- Nuova barra input migliorata -->
-        <div class="input-fixed">
-            <div id="imagePreviewArea" style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 8px;"></div>
-            <div class="input-box">
-                <button class="attach-btn" id="attachImageBtn">
-                    <img src="attach.svg" alt="Allega">
-                </button>
-                <textarea id="user-input" rows="1" placeholder="Scrivi un messaggio..."></textarea>
-                <button id="send-btn">
-                    <img src="send.svg" alt="Invia">
-                </button>
-            </div>
-            <p class="footer-note">Visione AI • RAG + Groq</p>
-        </div>
-    </main>
+    let allChats = {};
+    let currentChatId = null;
+    let currentImageBase64 = null;
 
-    <input type="file" id="imageInput" accept="image/*" style="display: none;">
+    // Elementi DOM
+    const chatDisplay = document.getElementById('chat-display');
+    const userInput = document.getElementById('user-input');
+    const sendBtn = document.getElementById('send-btn');
+    const attachBtn = document.getElementById('attachImageBtn');
+    const imageInput = document.getElementById('imageInput');
+    const imagePreviewArea = document.getElementById('imagePreviewArea');
+    const newChatBtn = document.getElementById('newChatBtn');
+    const chatListDiv = document.getElementById('chatList');
+    const menuToggle = document.getElementById('menuToggle');
+    const sidebar = document.getElementById('sidebar');
+    const sidebarOverlay = document.getElementById('sidebarOverlay');
+    const statoBtn = document.getElementById('statoBtn');
 
-    <script>
-        // ========== CONFIGURAZIONE - MODIFICA QUI ==========
-        const BACKEND_URL = 'https://visione-server.onrender.com'; // Sostituisci con il tuo backend
-        const GROQ_API_KEY = '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';              // Sostituisci con la tua chiave Groq
-        const GROQ_MODEL = 'llama-3.1-8b-instant';
-        const GROQ_URL = 'https://api.groq.com/openai/v1/chat/completions';
-        // ===================================================
+    function closeSidebar() { sidebar.classList.remove('open'); sidebarOverlay.classList.remove('active'); }
+    function openSidebar() { sidebar.classList.add('open'); sidebarOverlay.classList.add('active'); }
+    menuToggle.onclick = openSidebar;
+    sidebarOverlay.onclick = closeSidebar;
 
-        const SYSTEM_PROMPT = `Sei Visione, un'assistente IA intelligente, amichevole e professionale. 
-        Usi un linguaggio naturale, italiano, e rispondi in modo chiaro e completo. 
-        Puoi usare emoji con moderazione. Non dire mai di essere un modello di Meta o Llama. 
-        Se l'utente chiede informazioni specifiche, cerca di fornire risposte utili basate sul contesto. 
-        Formatta il testo in modo leggibile, usando grassetto per i concetti importanti.`;
+    function saveData() {
+        localStorage.setItem('visione_chats', JSON.stringify(allChats));
+        localStorage.setItem('visione_current', currentChatId);
+    }
+    function loadData() {
+        const saved = localStorage.getItem('visione_chats');
+        if (saved) allChats = JSON.parse(saved);
+        currentChatId = localStorage.getItem('visione_current');
+        if (currentChatId && !allChats[currentChatId]) currentChatId = null;
+    }
 
-        // Elementi DOM
-        const chatDisplay = document.getElementById('chat-display');
-        const userInput = document.getElementById('user-input');
-        const sendBtn = document.getElementById('send-btn');
-        const attachBtn = document.getElementById('attachImageBtn');
-        const imageInput = document.getElementById('imageInput');
-        const imagePreviewArea = document.getElementById('imagePreviewArea');
-        const newChatBtn = document.getElementById('new-chat-btn');
-        const chatList = document.getElementById('chat-list');
-        const menuToggle = document.getElementById('menuToggle');
-        const sidebar = document.getElementById('sidebar');
-        const sidebarOverlay = document.getElementById('sidebarOverlay');
-
-        // Stato
-        let allChats = {};
-        let currentChatId = null;
-        let currentImageBase64 = null;
-
-        // Funzioni UI sidebar mobile
-        function closeSidebar() {
-            sidebar.classList.remove('open');
-            sidebarOverlay.classList.remove('active');
-        }
-        function openSidebar() {
-            sidebar.classList.add('open');
-            sidebarOverlay.classList.add('active');
-        }
-        if (menuToggle) menuToggle.onclick = openSidebar;
-        if (sidebarOverlay) sidebarOverlay.onclick = closeSidebar;
-
-        // Salvataggio localStorage
-        function saveData() {
-            localStorage.setItem('visione_chats', JSON.stringify(allChats));
-            localStorage.setItem('visione_current', currentChatId);
-        }
-        function loadData() {
-            const saved = localStorage.getItem('visione_chats');
-            if (saved) allChats = JSON.parse(saved);
-            currentChatId = localStorage.getItem('visione_current');
-            if (currentChatId && !allChats[currentChatId]) currentChatId = null;
-        }
-
-        // Render messaggio con Markdown, copia e download
-        function renderMessage(content, role) {
-            const wrapper = document.createElement('div');
-            wrapper.className = `message-wrapper ${role === 'user' ? 'user-wrapper' : 'quar-wrapper'}`;
-            const msgDiv = document.createElement('div');
-            msgDiv.className = `message ${role === 'user' ? 'msg-user' : 'msg-quar'}`;
-            let html = marked.parse(content);
-            msgDiv.innerHTML = html;
-
+    function renderMessage(content, role) {
+        const wrapper = document.createElement('div');
+        wrapper.className = `message-wrapper ${role === 'user' ? 'user-wrapper' : 'ai-wrapper'}`;
+        const msgDiv = document.createElement('div');
+        msgDiv.className = `message ${role === 'user' ? 'msg-user' : 'msg-ai'}`;
+        let html = marked.parse(content);
+        msgDiv.innerHTML = html;
+        if (role !== 'user') {
             const copyBtn = document.createElement('button');
             copyBtn.className = 'copy-btn';
             copyBtn.innerHTML = '📋';
             copyBtn.onclick = () => { navigator.clipboard.writeText(content); copyBtn.innerHTML = '✅'; setTimeout(() => copyBtn.innerHTML = '📋', 1500); };
             msgDiv.appendChild(copyBtn);
-            if (content.includes('```')) {
-                const downloadBtn = document.createElement('button');
-                downloadBtn.className = 'download-btn';
-                downloadBtn.innerHTML = '💾';
-                downloadBtn.onclick = () => {
-                    const blob = new Blob([content], {type: 'text/plain'});
-                    const a = document.createElement('a');
-                    a.href = URL.createObjectURL(blob);
-                    a.download = 'visione_output.txt';
-                    a.click();
-                    URL.revokeObjectURL(a.href);
-                };
-                msgDiv.appendChild(downloadBtn);
+        }
+        wrapper.appendChild(msgDiv);
+        chatDisplay.appendChild(wrapper);
+        chatDisplay.scrollTop = chatDisplay.scrollHeight;
+        msgDiv.querySelectorAll('pre code').forEach(block => hljs.highlightElement(block));
+    }
+
+    function showTyping() {
+        const wrapper = document.createElement('div');
+        wrapper.className = 'message-wrapper ai-wrapper';
+        wrapper.id = 'typingIndicator';
+        wrapper.innerHTML = `<div class="message msg-ai typing-indicator"><span></span><span></span><span></span></div>`;
+        chatDisplay.appendChild(wrapper);
+        chatDisplay.scrollTop = chatDisplay.scrollHeight;
+    }
+    function hideTyping() { document.getElementById('typingIndicator')?.remove(); }
+
+    function updateSidebarList() {
+        chatListDiv.innerHTML = '';
+        const sorted = Object.keys(allChats).sort((a,b)=>b-a);
+        for (let id of sorted) {
+            const item = document.createElement('div');
+            item.className = 'chat-list-item';
+            if (id === currentChatId) item.classList.add('active');
+            item.onclick = () => loadChat(id);
+            const titleSpan = document.createElement('span');
+            titleSpan.innerText = allChats[id].title || 'Chat';
+            const delBtn = document.createElement('button');
+            delBtn.className = 'delete-chat-btn';
+            delBtn.innerHTML = '✕';
+            delBtn.onclick = (e) => { e.stopPropagation(); deleteChat(id); };
+            item.appendChild(titleSpan);
+            item.appendChild(delBtn);
+            chatListDiv.appendChild(item);
+        }
+    }
+
+    function loadChat(id) {
+        if (!allChats[id]) return;
+        currentChatId = id;
+        saveData();
+        updateSidebarList();
+        chatDisplay.innerHTML = '';
+        for (let msg of allChats[id].history) {
+            if (msg.role !== 'system') renderMessage(msg.content, msg.role);
+        }
+        if (window.innerWidth <= 768) closeSidebar();
+    }
+
+    function deleteChat(id) {
+        delete allChats[id];
+        if (currentChatId === id) {
+            currentChatId = null;
+            chatDisplay.innerHTML = '<div class="message-wrapper ai-wrapper"><div class="message msg-ai">Nuova conversazione. Cosa vuoi chiedere?</div></div>';
+        }
+        saveData();
+        updateSidebarList();
+    }
+
+    async function newChat() {
+        currentChatId = Date.now().toString();
+        allChats[currentChatId] = { title: 'Nuova chat', history: [{ role: 'system', content: SYSTEM_PROMPT }] };
+        saveData();
+        updateSidebarList();
+        chatDisplay.innerHTML = '<div class="message-wrapper ai-wrapper"><div class="message msg-ai">Nuova conversazione. Cosa vuoi chiedere?</div></div>';
+        if (window.innerWidth <= 768) closeSidebar();
+    }
+
+    // Comando /stato
+    async function mostraStato() {
+        try {
+            const res = await fetch(`${BACKEND_URL}/stato`);
+            const data = await res.json();
+            renderMessage(`📊 **Stato del database**\n\n- Pagine: ${data.pagine}\n- Dimensione: ${data.dimensione_mb} MB`, 'assistant');
+        } catch (err) {
+            renderMessage(`❌ Errore nel recupero stato: ${err.message}`, 'assistant');
+        }
+    }
+
+    async function getContext(question) {
+        try {
+            const res = await fetch(`${BACKEND_URL}/chat`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ message: question })
+            });
+            const data = await res.json();
+            return data.response || '';
+        } catch(e) { return ''; }
+    }
+
+    async function sendMessage() {
+        let text = userInput.value.trim();
+        if (!text && !currentImageBase64) return;
+        if (!text && currentImageBase64) text = "Descrivi questa immagine";
+        if (!currentChatId) await newChat();
+
+        let userMsg = text;
+        if (currentImageBase64) userMsg += `\n[Immagine in allegato]`;
+        renderMessage(userMsg, 'user');
+        allChats[currentChatId].history.push({ role: 'user', content: userMsg });
+        saveData();
+        userInput.value = '';
+        userInput.style.height = 'auto';
+        const imgToSend = currentImageBase64;
+        currentImageBase64 = null;
+        imagePreviewArea.innerHTML = '';
+
+        showTyping();
+        sendBtn.disabled = true;
+
+        try {
+            // Recupera contesto dal backend (RAG)
+            let context = await getContext(text);
+            let imgDesc = '';
+            if (imgToSend) {
+                // Opzionale: chiamata backend per analizzare immagine (se implementato)
+                imgDesc = "(Immagine allegata, analisi non disponibile)";
             }
-            wrapper.appendChild(msgDiv);
-            chatDisplay.appendChild(wrapper);
-            chatDisplay.scrollTop = chatDisplay.scrollHeight;
-            msgDiv.querySelectorAll('pre code').forEach(block => hljs.highlightElement(block));
-        }
+            // Costruisci prompt per Groq
+            const history = allChats[currentChatId].history.filter(m => m.role !== 'system').slice(-6);
+            let prompt = `Sei Visione. Rispondi in italiano.\n${history.map(m => `${m.role === 'user' ? 'Utente' : 'Assistente'}: ${m.content}`).join('\n')}\n\n`;
+            if (context) prompt += `Informazioni trovate: ${context}\n`;
+            if (imgDesc) prompt += `Immagine: ${imgDesc}\n`;
+            prompt += `\nUtente: ${text}\nRisposta:`;
 
-        function showTyping() {
-            const wrapper = document.createElement('div');
-            wrapper.className = 'message-wrapper quar-wrapper';
-            wrapper.id = 'typingIndicator';
-            wrapper.innerHTML = `<div class="message msg-quar typing-indicator"><span></span><span></span><span></span></div>`;
-            chatDisplay.appendChild(wrapper);
-            chatDisplay.scrollTop = chatDisplay.scrollHeight;
-        }
-        function hideTyping() { document.getElementById('typingIndicator')?.remove(); }
-
-        // Sidebar lista chat
-        function updateSidebarList() {
-            chatList.innerHTML = '';
-            const sorted = Object.keys(allChats).sort((a,b)=>b-a);
-            for (let id of sorted) {
-                const item = document.createElement('div');
-                item.className = 'chat-list-item';
-                if (id === currentChatId) item.classList.add('active');
-                item.onclick = () => loadChat(id);
-                const titleSpan = document.createElement('span');
-                titleSpan.className = 'chat-title-text';
-                titleSpan.innerText = allChats[id].title || 'Conversazione';
-                const delBtn = document.createElement('button');
-                delBtn.className = 'delete-chat-btn';
-                delBtn.innerHTML = '×';
-                delBtn.onclick = (e) => { e.stopPropagation(); deleteChat(id); };
-                item.appendChild(titleSpan);
-                item.appendChild(delBtn);
-                chatList.appendChild(item);
-            }
-        }
-
-        function loadChat(id) {
-            if (!allChats[id]) return;
-            currentChatId = id;
+            const groqResp = await fetch(GROQ_URL, {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${GROQ_API_KEY}`, 'Content-Type': 'application/json' },
+                body: JSON.stringify({ model: GROQ_MODEL, messages: [{ role: 'user', content: prompt }], temperature: 0.7, max_tokens: 600 })
+            });
+            if (!groqResp.ok) throw new Error(`Groq error ${groqResp.status}`);
+            const groqData = await groqResp.json();
+            const answer = groqData.choices[0].message.content;
+            hideTyping();
+            renderMessage(answer, 'assistant');
+            allChats[currentChatId].history.push({ role: 'assistant', content: answer });
             saveData();
-            updateSidebarList();
-            chatDisplay.innerHTML = '';
-            for (let msg of allChats[id].history) {
-                if (msg.role !== 'system') renderMessage(msg.content, msg.role);
-            }
-            if (window.innerWidth <= 768) closeSidebar();
-        }
-
-        function deleteChat(id) {
-            delete allChats[id];
-            if (currentChatId === id) {
-                currentChatId = null;
-                chatDisplay.innerHTML = '<div class="message-wrapper quar-wrapper"><div class="message msg-quar">Nuova conversazione. Cosa vuoi chiedere?</div></div>';
-            }
-            saveData();
-            updateSidebarList();
-        }
-
-        async function newChat() {
-            currentChatId = Date.now().toString();
-            allChats[currentChatId] = {
-                title: 'Nuova chat',
-                history: [{ role: 'system', content: SYSTEM_PROMPT }]
-            };
-            saveData();
-            updateSidebarList();
-            chatDisplay.innerHTML = '<div class="message-wrapper quar-wrapper"><div class="message msg-quar">Nuova conversazione. Cosa vuoi chiedere?</div></div>';
-            if (window.innerWidth <= 768) closeSidebar();
-        }
-
-        // RAG context dal backend
-        async function getContext(question) {
-            try {
-                const res = await fetch(`${BACKEND_URL}/chat`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ message: question })
-                });
-                const data = await res.json();
-                if (data.response && !data.response.includes('Generazione automatica non disponibile')) return data.response;
-                return '';
-            } catch(e) { return ''; }
-        }
-
-        async function sendMessage() {
-            let text = userInput.value.trim();
-            if (!text && !currentImageBase64) return;
-            if (!text && currentImageBase64) text = 'Descrivi questa immagine';
-            if (!currentChatId) await newChat();
-
-            let userMsg = text;
-            if (currentImageBase64) userMsg += `\n[Immagine in allegato]`;
-            renderMessage(userMsg, 'user');
-            allChats[currentChatId].history.push({ role: 'user', content: userMsg });
-            saveData();
-            userInput.value = '';
-            userInput.style.height = 'auto';
-            const imgToSend = currentImageBase64;
-            currentImageBase64 = null;
-            imagePreviewArea.innerHTML = '';
-
-            showTyping();
-            sendBtn.disabled = true;
-
-            try {
-                let context = await getContext(text);
-                let imgDesc = '';
-                if (imgToSend) {
-                    try {
-                        const imgRes = await fetch(`${BACKEND_URL}/analizza_immagine`, {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ image_base64: imgToSend })
-                        });
-                        const imgData = await imgRes.json();
-                        imgDesc = imgData.description || '';
-                    } catch(e) { imgDesc = 'Errore analisi immagine.'; }
-                }
-
-                const history = allChats[currentChatId].history.filter(m => m.role !== 'system').slice(-6);
-                let prompt = `Sei Visione. Rispondi in italiano. ${history.map(m => `${m.role === 'user' ? 'Utente' : 'Assistente'}: ${m.content}`).join('\n')}\n\n`;
-                if (context) prompt += `Informazioni: ${context}\n`;
-                if (imgDesc) prompt += `Descrizione immagine: ${imgDesc}\n`;
-                prompt += `\nUtente: ${text}\nRisposta:`;
-
-                const groqResp = await fetch(GROQ_URL, {
+            // Titolo auto
+            if (allChats[currentChatId].history.filter(m => m.role !== 'system').length === 2) {
+                const titleRes = await fetch(GROQ_URL, {
                     method: 'POST',
                     headers: { 'Authorization': `Bearer ${GROQ_API_KEY}`, 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ model: GROQ_MODEL, messages: [{ role: 'user', content: prompt }], temperature: 0.7, max_tokens: 600 })
+                    body: JSON.stringify({ model: GROQ_MODEL, messages: [{ role: 'user', content: `Titolo breve (max 6 parole) per: ${text}` }], max_tokens: 30 })
                 });
-                if (!groqResp.ok) throw new Error(`Groq error ${groqResp.status}`);
-                const groqData = await groqResp.json();
-                const answer = groqData.choices[0].message.content;
-
-                hideTyping();
-                renderMessage(answer, 'assistant');
-                allChats[currentChatId].history.push({ role: 'assistant', content: answer });
-                saveData();
-
-                if (allChats[currentChatId].history.filter(m => m.role !== 'system').length === 2) {
-                    try {
-                        const titleRes = await fetch(GROQ_URL, {
-                            method: 'POST',
-                            headers: { 'Authorization': `Bearer ${GROQ_API_KEY}`, 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ model: GROQ_MODEL, messages: [{ role: 'user', content: `Genera un breve titolo (max 6 parole) per: ${text}` }], max_tokens: 30 })
-                        });
-                        const titleData = await titleRes.json();
-                        let newTitle = titleData.choices[0].message.content.slice(0,40);
-                        allChats[currentChatId].title = newTitle;
-                        saveData();
-                        updateSidebarList();
-                    } catch(e) { console.warn("Titolo non generato"); }
+                if (titleRes.ok) {
+                    const titleData = await titleRes.json();
+                    let newTitle = titleData.choices[0].message.content.slice(0,40);
+                    allChats[currentChatId].title = newTitle;
+                    saveData();
+                    updateSidebarList();
                 }
-            } catch(err) {
-                hideTyping();
-                renderMessage(`❌ ${err.message}`, 'assistant');
-                allChats[currentChatId].history.push({ role: 'assistant', content: `Errore: ${err.message}` });
-                saveData();
-            } finally {
-                sendBtn.disabled = false;
-                userInput.focus();
             }
+        } catch(err) {
+            hideTyping();
+            renderMessage(`❌ Errore: ${err.message}`, 'assistant');
+            allChats[currentChatId].history.push({ role: 'assistant', content: `Errore: ${err.message}` });
+            saveData();
+        } finally {
+            sendBtn.disabled = false;
+            userInput.focus();
         }
+    }
 
-        // Auto resize textarea
-        function autoResize() { this.style.height = 'auto'; this.style.height = (this.scrollHeight) + 'px'; }
-        userInput.addEventListener('input', autoResize);
-        sendBtn.onclick = sendMessage;
-        userInput.addEventListener('keydown', (e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); } });
-        attachBtn.onclick = () => imageInput.click();
-        imageInput.onchange = (e) => {
-            const file = e.target.files[0];
-            if (!file) return;
-            const reader = new FileReader();
-            reader.onload = (ev) => {
-                currentImageBase64 = ev.target.result.split(',')[1];
-                const previewDiv = document.createElement('div');
-                previewDiv.className = 'image-preview';
-                previewDiv.innerHTML = `<img src="${ev.target.result}"><span class="remove-img">✕</span>`;
-                previewDiv.querySelector('.remove-img').onclick = () => { currentImageBase64 = null; previewDiv.remove(); };
-                imagePreviewArea.appendChild(previewDiv);
-            };
-            reader.readAsDataURL(file);
+    function autoResize() { this.style.height = 'auto'; this.style.height = this.scrollHeight + 'px'; }
+    userInput.addEventListener('input', autoResize);
+    sendBtn.onclick = sendMessage;
+    userInput.addEventListener('keydown', (e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); } });
+    attachBtn.onclick = () => imageInput.click();
+    imageInput.onchange = (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+            currentImageBase64 = ev.target.result.split(',')[1];
+            const previewDiv = document.createElement('div');
+            previewDiv.className = 'image-preview';
+            previewDiv.innerHTML = `<img src="${ev.target.result}" width="60" style="border-radius: 12px;"><span class="remove-img" style="position: absolute; top: -8px; right: -8px; background: rgba(0,0,0,0.6); border-radius: 50%; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; color: white; cursor: pointer;">✕</span>`;
+            previewDiv.querySelector('.remove-img').onclick = () => { currentImageBase64 = null; previewDiv.remove(); };
+            imagePreviewArea.appendChild(previewDiv);
         };
-        newChatBtn.onclick = newChat;
+        reader.readAsDataURL(file);
+    };
+    newChatBtn.onclick = newChat;
+    statoBtn.onclick = () => { if (currentChatId) mostraStato(); else newChat().then(mostraStato); };
 
-        loadData();
-        if (currentChatId && allChats[currentChatId]) loadChat(currentChatId);
-        else newChat();
-    </script>
+    loadData();
+    if (currentChatId && allChats[currentChatId]) loadChat(currentChatId);
+    else newChat();
+</script>
 </body>
 </html>
