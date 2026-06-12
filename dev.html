@@ -2,13 +2,18 @@
 <html lang="it">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
     <title>Visione AI - Developer Lab</title>
     <link rel="icon" type="image/png" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>👨‍💻</text></svg>">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, sans-serif; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
         :root {
             --bg-color: #f5f5f7;
             --text-main: #1d1d1f;
@@ -45,12 +50,18 @@
             height: 100vh;
             overflow: hidden;
             display: flex;
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, sans-serif;
         }
-        .ambient-light { position: absolute; border-radius: 50%; filter: blur(140px); z-index: -1; pointer-events: none; }
+        .ambient-light {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(140px);
+            z-index: -1;
+            pointer-events: none;
+        }
         .light-1 { width: 50vw; height: 50vw; background: var(--glow-1); top: -10%; left: -10%; }
         .light-2 { width: 40vw; height: 40vw; background: var(--glow-2); bottom: -10%; right: -10%; }
-
-        /* Sidebar */
+        
         .glass-panel {
             background: var(--glass-bg);
             backdrop-filter: blur(40px) saturate(180%);
@@ -67,7 +78,13 @@
             padding: 24px 16px;
             z-index: 10;
         }
-        .brand h2 { font-size: 1.3rem; margin-bottom: 24px; display: flex; align-items: center; gap: 8px; }
+        .brand h2 {
+            font-size: 1.3rem;
+            margin-bottom: 24px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
         .btn-glass {
             background: var(--input-bg);
             border: 1px solid var(--glass-border);
@@ -82,25 +99,18 @@
             gap: 8px;
             font-weight: 500;
             margin-bottom: 20px;
-        }
-        .btn-glass:hover { background: var(--hover-item); transform: translateY(-1px); }
-        .back-link {
-            display: flex;
-            align-items: center;
-            gap: 6px;
             text-decoration: none;
-            color: var(--text-main);
-            margin-top: auto;
-            padding: 12px;
-            border-radius: 12px;
-            background: var(--input-bg);
+            width: 100%;
         }
-        /* Main area */
+        .btn-glass:hover {
+            background: var(--hover-item);
+            transform: translateY(-1px);
+        }
         .main-lab {
             flex: 1;
             display: flex;
             flex-direction: column;
-            padding: 20px 20px 20px 20px;
+            padding: 20px;
             overflow: hidden;
         }
         .toolbar {
@@ -119,14 +129,17 @@
             transition: 0.2s;
             color: var(--text-main);
         }
-        .toolbar button:hover { background: var(--hover-item); transform: scale(0.97); }
+        .toolbar button:hover {
+            background: var(--hover-item);
+            transform: scale(0.97);
+        }
         .editor-preview {
             display: flex;
             flex: 1;
             gap: 20px;
             min-height: 0;
         }
-        .editor-container {
+        .editor-container, .preview-container {
             flex: 1;
             display: flex;
             flex-direction: column;
@@ -136,11 +149,11 @@
             border-radius: 24px;
             overflow: hidden;
         }
-        .editor-header {
+        .editor-header, .preview-header {
             padding: 12px 16px;
             border-bottom: 1px solid var(--glass-border);
             font-weight: 600;
-            background: rgba(0,0,0,0.1);
+            background: rgba(0,0,0,0.05);
         }
         textarea {
             flex: 1;
@@ -153,21 +166,6 @@
             color: var(--text-main);
             resize: none;
             outline: none;
-        }
-        .preview-container {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            background: var(--glass-bg);
-            backdrop-filter: blur(20px);
-            border: 1px solid var(--glass-border);
-            border-radius: 24px;
-            overflow: hidden;
-        }
-        .preview-header {
-            padding: 12px 16px;
-            border-bottom: 1px solid var(--glass-border);
-            font-weight: 600;
         }
         .output-frame {
             flex: 1;
@@ -202,14 +200,16 @@
     <div class="brand"><h2>👨‍💻 Visione Lab</h2></div>
     <button id="newFileBtn" class="btn-glass">📄 Nuovo file</button>
     <button id="resetCodeBtn" class="btn-glass">🔄 Reset esempio</button>
-    <a href="index.html" class="back-link">← Torna alla chat</a>
+    <a href="index.html" class="btn-glass" style="margin-top: auto;">← Torna alla chat</a>
 </aside>
 
 <div class="main-lab">
     <div class="toolbar">
         <button id="runBtn">▶️ Esegui codice</button>
         <button id="explainBtn">🧠 Spiega il codice</button>
+        <button id="generateBtn">✨ Genera codice da descrizione</button>
         <button id="clearOutputBtn">🗑️ Pulisci output</button>
+        <button id="copyBtn">📋 Copia codice</button>
     </div>
     <div class="editor-preview">
         <div class="editor-container">
@@ -223,28 +223,29 @@
     </div>
     <div class="explanation" id="explanationBox">
         <h3>✨ Spiegazione AI</h3>
-        <p>Clicca su "Spiega il codice" per ricevere un'analisi intelligente del tuo codice.</p>
+        <p>Clicca su "Spiega il codice" per ricevere un'analisi intelligente.</p>
     </div>
 </div>
 
 <script>
-    // CONFIGURAZIONE (usa le stesse credenziali del backend e Groq)
-    const BACKEND_URL = 'https://web-production-69591.up.railway.app/';
-    const GROQ_API_KEY = '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';  // SOSTITUISCI
+    // CONFIGURAZIONE - MODIFICA CON I TUOI DATI
+    const GROQ_API_KEY = 'gsk_LA_TUA_NUOVA_CHIAVE';   // SOSTITUISCI
     const GROQ_MODEL = 'llama-3.1-8b-instant';
     const GROQ_URL = 'https://api.groq.com/openai/v1/chat/completions';
-
+    
     // Elementi DOM
     const codeEditor = document.getElementById('codeEditor');
     const previewFrame = document.getElementById('previewFrame');
     const runBtn = document.getElementById('runBtn');
     const explainBtn = document.getElementById('explainBtn');
+    const generateBtn = document.getElementById('generateBtn');
     const clearOutputBtn = document.getElementById('clearOutputBtn');
+    const copyBtn = document.getElementById('copyBtn');
     const newFileBtn = document.getElementById('newFileBtn');
     const resetCodeBtn = document.getElementById('resetCodeBtn');
     const explanationDiv = document.getElementById('explanationBox');
 
-    // Esempio di codice iniziale
+    // Codice di esempio
     const DEFAULT_CODE = `<!DOCTYPE html>
 <html>
 <head>
@@ -263,29 +264,21 @@
 </html>`;
 
     let currentCode = DEFAULT_CODE;
-
-    // Inizializza editor
     codeEditor.value = currentCode;
 
-    // Funzione per eseguire il codice nell'iframe
+    // Funzione per eseguire il codice nell'iframe (usa srcdoc per sicurezza)
     function runCode() {
         const code = codeEditor.value;
         currentCode = code;
-        const iframe = previewFrame;
-        const blob = new Blob([code], { type: 'text/html' });
-        const url = URL.createObjectURL(blob);
-        iframe.src = url;
-        // Rilascia l'URL dopo il caricamento per evitare memory leak
-        iframe.onload = () => URL.revokeObjectURL(url);
+        previewFrame.srcdoc = code;
     }
 
-    // Pulisce l'iframe (mostra pagina bianca)
+    // Pulisce l'iframe
     function clearOutput() {
-        const iframe = previewFrame;
-        iframe.srcdoc = '<!DOCTYPE html><html><body style="background:white; font-family:sans-serif; display:flex; align-items:center; justify-content:center; height:100vh;">🖥️ Output pulito</body></html>';
+        previewFrame.srcdoc = '<!DOCTYPE html><html><body style="background:white; font-family:sans-serif; display:flex; align-items:center; justify-content:center; height:100vh;">🖥️ Output pulito</body></html>';
     }
 
-    // Spiega il codice usando Groq (direttamente dal frontend, senza backend)
+    // Spiega il codice usando Groq
     async function explainCode() {
         const code = codeEditor.value;
         if (!code.trim()) {
@@ -311,42 +304,83 @@
             if (!response.ok) throw new Error(`HTTP ${response.status}`);
             const data = await response.json();
             const explanation = data.choices[0].message.content;
-            // Formatta il testo (Markdown di base)
             let html = marked.parse(explanation);
             explanationDiv.innerHTML = `<h3>✨ Spiegazione AI</h3>${html}`;
         } catch (err) {
-            explanationDiv.innerHTML = `<h3>✨ Spiegazione AI</h3><p>❌ Errore nel contattare l'AI: ${err.message}</p>`;
+            explanationDiv.innerHTML = `<h3>✨ Spiegazione AI</h3><p>❌ Errore: ${err.message}</p>`;
             console.error(err);
         }
     }
 
-    // Reset codice all'esempio
-    function resetCode() {
-        codeEditor.value = DEFAULT_CODE;
-        currentCode = DEFAULT_CODE;
-        runCode();
-        explanationDiv.innerHTML = `<h3>✨ Spiegazione AI</h3><p>Codice ripristinato. Clicca su "Spiega il codice" per una descrizione.</p>`;
+    // Genera codice da descrizione (chiede input all'utente e restituisce codice HTML/CSS/JS)
+    async function generateCodeFromDescription() {
+        const description = prompt("Descrivi cosa vuoi che faccia il codice (es. 'un bottone che cambia colore quando cliccato'):");
+        if (!description) return;
+        explanationDiv.innerHTML = `<h3>✨ Generazione codice</h3><p>🔧 Visione sta generando il codice...</p>`;
+        const promptMsg = `Genera codice HTML, CSS e JavaScript (tutto in un unico file HTML) che realizzi la seguente descrizione: "${description}". Restituisci SOLO il codice HTML, senza spiegazioni. Assicurati che sia funzionante e ben strutturato. Usa stili moderni.`;
+        try {
+            const response = await fetch(GROQ_URL, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${GROQ_API_KEY}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    model: GROQ_MODEL,
+                    messages: [{ role: 'user', content: promptMsg }],
+                    temperature: 0.7,
+                    max_tokens: 1500
+                })
+            });
+            if (!response.ok) throw new Error(`HTTP ${response.status}`);
+            const data = await response.json();
+            let generatedCode = data.choices[0].message.content;
+            // Pulisci eventuali markdown: estrai codice tra ```html ... ```
+            const codeMatch = generatedCode.match(/```(?:html)?\s*([\s\S]*?)```/);
+            if (codeMatch) generatedCode = codeMatch[1];
+            codeEditor.value = generatedCode;
+            runCode();
+            explanationDiv.innerHTML = `<h3>✨ Codice generato</h3><p>✅ Codice generato con successo! Premi "Esegui codice" per vederlo (già eseguito).</p>`;
+        } catch (err) {
+            explanationDiv.innerHTML = `<h3>✨ Errore</h3><p>❌ Impossibile generare codice: ${err.message}</p>`;
+        }
     }
 
-    // Nuovo file (editor vuoto)
+    // Copia codice
+    function copyCode() {
+        const code = codeEditor.value;
+        navigator.clipboard.writeText(code).then(() => {
+            const btn = copyBtn;
+            const originalText = btn.innerText;
+            btn.innerText = "✅ Copiato!";
+            setTimeout(() => btn.innerText = originalText, 1500);
+        }).catch(err => alert("Errore copia: " + err));
+    }
+
+    // Reset esempio
+    function resetCode() {
+        codeEditor.value = DEFAULT_CODE;
+        runCode();
+        explanationDiv.innerHTML = `<h3>✨ Reset</h3><p>Codice ripristinato all'esempio.</p>`;
+    }
+
+    // Nuovo file (vuoto)
     function newFile() {
         codeEditor.value = '';
-        currentCode = '';
         clearOutput();
-        explanationDiv.innerHTML = `<h3>✨ Spiegazione AI</h3><p>Editor vuoto. Scrivi il tuo codice e premi "Esegui".</p>`;
+        explanationDiv.innerHTML = `<h3>✨ Nuovo file</h3><p>Editor vuoto, scrivi il tuo codice.</p>`;
     }
 
     // Eventi
     runBtn.addEventListener('click', runCode);
     explainBtn.addEventListener('click', explainCode);
+    generateBtn.addEventListener('click', generateCodeFromDescription);
     clearOutputBtn.addEventListener('click', clearOutput);
+    copyBtn.addEventListener('click', copyCode);
     newFileBtn.addEventListener('click', newFile);
     resetCodeBtn.addEventListener('click', resetCode);
 
-    // Esegui automaticamente all'avvio
-    runCode();
-
-    // Salvataggio locale del codice (opzionale)
+    // Salvataggio automatico su localStorage
     let saveTimeout;
     codeEditor.addEventListener('input', () => {
         clearTimeout(saveTimeout);
@@ -359,10 +393,11 @@
     if (savedCode) {
         codeEditor.value = savedCode;
         runCode();
+    } else {
+        runCode();
     }
 
-    // Per evidenziazione sintassi (opzionale) - useremo semplicemente la textarea.
-    // Se vuoi syntax highlighting avanzato, potremmo integrare CodeMirror, ma per ora va bene.
+    // Per rendere più bella l'area di spiegazione, evidenzia codice eventuale.
 </script>
 </body>
 </html>
