@@ -25,8 +25,8 @@
       --user-bdr:  rgba(0,101,216,0.18);
       --input-bg:  rgba(255,255,255,0.72);
       --hover:     rgba(0,0,0,0.04);
-      --code-bg:   rgba(20,20,30,0.96);
-      --code-txt:  #e8eaf0;
+      --code-bg:   #0c0c14;
+      --code-txt:  #e3e6ed;
       --glow1:     rgba(0,101,216,0.12);
       --glow2:     rgba(94,67,243,0.10);
       --glow3:     rgba(0,200,180,0.07);
@@ -52,7 +52,7 @@
         --user-bdr: rgba(59,147,255,0.22);
         --input-bg: rgba(255,255,255,0.06);
         --hover:    rgba(255,255,255,0.05);
-        --code-bg:  rgba(12,12,18,0.97);
+        --code-bg:  #08080f;
         --glow1:    rgba(59,147,255,0.14);
         --glow2:    rgba(155,133,255,0.12);
         --glow3:    rgba(0,220,190,0.08);
@@ -264,20 +264,43 @@
     }
     .thinking-content { font-size: 0.88rem; color: var(--txt2); font-style: italic; line-height: 1.55; }
 
-    /* ─── CODE BLOCKS PREMIUM ───────────────────────── */
-    .code-block { margin: 22px 0; border-radius: 14px; overflow: hidden; border: 1px solid rgba(255,255,255,.07); box-shadow: 0 10px 30px rgba(0,0,0,.25); font-size: .88rem; }
-    .code-header { background: rgba(25,25,35,.98); display: flex; align-items: center; justify-content: space-between; padding: 10px 16px; border-bottom: 1px solid rgba(255,255,255,.06); }
+    /* ─── CODE BLOCKS PREMIUM (MONOSPACE ULTRA STYLISH) ─── */
+    .code-block { margin: 24px 0; border-radius: 16px; overflow: hidden; border: 1px solid rgba(255,255,255,.08); box-shadow: var(--shadow-lg); font-size: .88rem; }
+    .code-header { background: #12121a; display: flex; align-items: center; justify-content: space-between; padding: 12px 18px; border-bottom: 1px solid rgba(255,255,255,.06); }
     .code-header-left { display: flex; align-items: center; gap: 10px; }
     .traffic-lights { display: flex; gap: 6px; }
     .tl { width: 11px; height: 11px; border-radius: 50%; }
     .tl-red { background: #ff5f57; }
     .tl-yellow { background: #ffbd2e; }
     .tl-green { background: #28c840; }
-    .code-lang { font-size: .74rem; font-weight: 600; letter-spacing: .5px; text-transform: uppercase; color: rgba(255,255,255,.35); font-family: monospace; }
-    .code-copy-btn { background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.08); border-radius: 6px; color: rgba(255,255,255,.5); font-size: .76rem; font-weight: 500; padding: 4px 10px; cursor: pointer; transition: all .18s; }
-    .code-copy-btn:hover { background: rgba(255,255,255,.12); color: #fff; }
-    .code-body { background: var(--code-bg); padding: 16px 20px; overflow-x: auto; }
-    .code-body pre { font-family: "SF Mono", "Fira Code", "Menlo", monospace; font-size: .86rem; line-height: 1.6; color: var(--code-txt); white-space: pre; }
+    .code-lang { font-size: .74rem; font-weight: 700; letter-spacing: .6px; text-transform: uppercase; color: rgba(255,255,255,.4); font-family: "Fira Code", "SF Mono", monospace; }
+    
+    .code-actions-group { display: flex; gap: 8px; }
+    .code-btn-premium { 
+      background: rgba(255,255,255,.06); 
+      border: 1px solid rgba(255,255,255,.08); 
+      border-radius: 8px; 
+      color: rgba(255,255,255,.65); 
+      font-size: .76rem; 
+      font-weight: 600; 
+      padding: 5px 12px; 
+      cursor: pointer; 
+      transition: all .18s; 
+      display: flex; align-items: center; gap: 5px; 
+    }
+    .code-btn-premium:hover { background: rgba(255,255,255,.14); color: #fff; border-color: rgba(255,255,255,.2); transform: translateY(-1px); }
+    
+    .code-body { background: var(--code-bg); padding: 18px 22px; overflow-x: auto; }
+    .code-body pre { margin: 0; padding: 0; }
+    .code-body code { 
+      font-family: "Fira Code", "Cascadia Code", "Source Code Pro", "SF Mono", Monaco, Menlo, Consolas, monospace !important; 
+      font-size: .88rem; 
+      line-height: 1.65; 
+      color: var(--code-txt); 
+      white-space: pre; 
+      background: transparent !important;
+      padding: 0 !important;
+    }
     
     .copy-btn {
       position: absolute; top: -8px; right: 2%; width: 32px; height: 32px; border-radius: 50%;
@@ -378,6 +401,83 @@
   let cid = null;
   let typeInterval = null;
 
+  // Configurazione Custom Renderer di Marked per iniettare i blocchi di codice strutturati
+  const renderer = new marked.Renderer();
+  renderer.code = function(token, lang) {
+    let text = "";
+    let language = "";
+    if (token && typeof token === 'object') {
+      text = token.text || "";
+      language = token.lang || "";
+    } else {
+      text = token || "";
+      language = lang || "";
+    }
+    
+    const escapedText = text
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;");
+
+    // Codifica Base64 sicura per passare l'intero codice negli attributi JavaScript degli inline buttons
+    const encodedCode = btoa(unescape(encodeURIComponent(text)));
+
+    return `
+      <div class="code-block">
+        <div class="code-header">
+          <div class="code-header-left">
+            <div class="traffic-lights">
+              <div class="tl tl-red"></div>
+              <div class="tl tl-yellow"></div>
+              <div class="tl tl-green"></div>
+            </div>
+            <span class="code-lang">${language || 'code'}</span>
+          </div>
+          <div class="code-actions-group">
+            <button class="code-btn-premium" onclick="copyCodeBlock(this, '${encodedCode}')">📋 Copia</button>
+            <button class="code-btn-premium" onclick="downloadCodeBlock(this, '${encodedCode}', '${language || 'txt'}')">💾 Scarica file</button>
+          </div>
+        </div>
+        <div class="code-body">
+          <pre><code class="language-${language || 'txt'}">${escapedText}</code></pre>
+        </div>
+      </div>
+    `;
+  };
+  marked.use({ renderer });
+
+  // Funzioni Globali per i bottoni dei blocchi di codice
+  window.copyCodeBlock = function(btn, encoded) {
+    const text = decodeURIComponent(escape(atob(encoded)));
+    navigator.clipboard.writeText(text);
+    btn.innerHTML = "✅ Copiato!";
+    setTimeout(() => btn.innerHTML = "📋 Copia", 1500);
+  };
+
+  window.downloadCodeBlock = function(btn, encoded, lang) {
+    const text = decodeURIComponent(escape(atob(encoded)));
+    const blob = new Blob([text], { type: "text/plain" });
+    const a = document.createElement("a");
+    
+    let ext = "txt";
+    const l = lang.toLowerCase();
+    if (l === "html") ext = "html";
+    else if (l === "css") ext = "css";
+    else if (l === "javascript" || l === "js") ext = "js";
+    else if (l === "python" || l === "py") ext = "py";
+    else if (l === "json") ext = "json";
+    else if (l === "php") ext = "php";
+    else if (l === "bash" || l === "sh") ext = "sh";
+    
+    a.href = URL.createObjectURL(blob);
+    a.download = `visione-code.${ext}`;
+    a.click();
+    btn.innerHTML = "⚡ Scaricato!";
+    setTimeout(() => btn.innerHTML = "💾 Scarica file", 1500);
+  };
+
   function init() {
     const saved = localStorage.getItem("qn_chats");
     if (saved) chats = JSON.parse(saved);
@@ -443,11 +543,10 @@
 
   function escHtml(str) { return str.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
 
-  // ─── PARSER AVANZATO CON MENU A TENDINA PER RAGIONAMENTO E THINKING ───
   function formatResponseHtml(rawText) {
     let processed = rawText;
 
-    // 1. Intercettazione tag standard <think>...</think> (es: DeepSeek o modelli nativi di ragionamento)
+    // 1. Intercettazione tag standard <think>...</think>
     if (processed.includes("<think>")) {
       processed = processed.replace(/<think>([\s\S]*?)<\/think>/g, function(match, content) {
         if (!content.trim()) return "";
@@ -458,7 +557,7 @@
       });
     }
     
-    // 2. Intercettazione vecchio blocco intestazione backend pipeline custom
+    // 2. Intercettazione pipeline custom del backend
     if (processed.includes("### 🛠️ VISIONE DEV ENGINE")) {
       let parti = processed.split("---");
       if (parti.length >= 2) {
@@ -497,10 +596,9 @@
       
       const copyBtn = document.createElement("button");
       copyBtn.className = "copy-btn";
-      copyBtn.title = "Copia codice/testo pulito";
+      copyBtn.title = "Copia risposta testuale intera";
       copyBtn.innerHTML = "📋";
       copyBtn.onclick = () => {
-        // Copia pulita escludendo il blocco di ragionamento
         let testoPulito = text.replace(/<think>[\s\S]*?<\/think>/g, "").replace(/### 🛠️ VISIONE DEV ENGINE[\s\S]*?---/, "").trim();
         navigator.clipboard.writeText(testoPulito);
         copyBtn.innerHTML = "✅";
@@ -538,7 +636,6 @@
       disp.classList.add("active");
     }
 
-    // ─── INIEZIONE MEMORIA STRUTTURATA (MIGLIORA/FIX AGGIUNTIVI) ───
     let promptConContesto = "";
     if (chats[cid].history.length > 0) {
       promptConContesto += "[MEMORIA AMBIENTE SVILUPPO - SESSIONE ATTIVA]\n";
@@ -548,7 +645,6 @@
         if (m.role === "user") {
           promptConContesto += `Utente (Richiesta precedente): ${m.content}\n\n`;
         } else {
-          // Pulizia del vecchio ragionamento per liberare il contesto di memoria
           let pulito = m.content.replace(/<think>[\s\S]*?<\/think>/g, "").replace(/### 🛠️ VISIONE DEV ENGINE[\s\S]*?---/, "").trim();
           promptConContesto += `Visione DEV (Codice/Risposta Prodotta):\n${pulito}\n\n`;
         }
